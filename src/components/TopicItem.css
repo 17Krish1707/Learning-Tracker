@@ -1,0 +1,187 @@
+.topic-item-row {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  transition: var(--transition-fast);
+  position: relative;
+}
+
+.topic-item-row:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-light);
+}
+
+.topic-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex: 1;
+}
+
+.status-btn {
+  margin-top: 2px;
+  transition: transform 0.2s;
+}
+
+.status-btn:hover {
+  transform: scale(1.1);
+}
+
+.status-icon.completed {
+  color: var(--success);
+}
+
+.status-icon.in-progress {
+  color: var(--warning);
+}
+
+.status-icon.not-started {
+  color: var(--text-muted);
+}
+
+.topic-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.topic-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topic-title {
+  font-size: 1.1rem;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.topic-title.completed-text {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.priority-badge {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--bg-subtle);
+}
+
+.topic-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.topic-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.log-time-btn {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+.delete-btn {
+  color: var(--danger);
+  opacity: 0.6;
+}
+
+.delete-btn:hover {
+  opacity: 1;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.logger-dropdown {
+  width: 100%;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--border-color);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.topic-inline-edit {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: 5px;
+  color: var(--text-primary, #fff);
+  font-size: 0.9rem;
+  padding: 2px 8px;
+  outline: none;
+  width: 100%;
+  max-width: 260px;
+}
+.topic-edit-btn {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+/* Show on row hover — adjust selector to match your topic row class */
+.topic-item-row:hover .topic-edit-btn {
+  opacity: 1;
+}
+
+/* Notes editing styles */
+.topic-notes-display {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: var(--bg-subtle);
+  border-left: 2px solid var(--accent-secondary);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.topic-notes-editor {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.topic-notes-input {
+  width: 100%;
+  min-height: 60px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  padding: 8px 12px;
+  resize: vertical;
+  outline: none;
+}
+.topic-notes-input:focus {
+  border-color: var(--accent-secondary);
+}
+
+.topic-notes-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}

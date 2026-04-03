@@ -1,0 +1,38 @@
+.study-logger {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 16px;
+  border-radius: var(--border-radius-sm);
+}
+
+.logger-inputs {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.input-group label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.logger-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.log-submit-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+}
