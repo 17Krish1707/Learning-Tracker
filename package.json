@@ -4,8 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "start": "NODE_ENV=production node backend/server.js",
     "dev": "vite",
+    "dev:backend": "npm run dev --prefix backend",
     "build": "vite build",
+    "postinstall": "npm install --prefix backend",
     "lint": "eslint .",
     "preview": "vite preview"
   },
