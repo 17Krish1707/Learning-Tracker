@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import ProfileModal from './components/ProfileModal';
 import { useAuth } from './context/AuthContext';
+import GoogleSignInButton from './components/GoogleSignInButton';
 
 const initialFolders = [
   { id: 'f1', name: 'Academics', emoji: '🎓', color: '#7c6ff7' },
