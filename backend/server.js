@@ -14,7 +14,14 @@ const folderRoutes = require('./routes/folders');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://mystudytrackr.vercel.app',
+    'https://study-tracker-app-17krish1707s-projects.vercel.app',
+  ],
+  credentials: true,
+}));
 app.use(express.json());
 
 // Connect DB once per cold start (Vercel reuses connections)
