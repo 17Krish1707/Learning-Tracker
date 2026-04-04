@@ -17,11 +17,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// DB connect middleware — runs before every request on Vercel (stateless)
+// Connect DB once per cold start (Vercel reuses connections)
+let isConnected = false;
 const connectDB = async () => {
-  if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(process.env.MONGO_URI);
-  }
+  if (isConnected) return;
+  await mongoose.connect(process.env.MONGO_URI);
+  isConnected = true;
 };
 
 app.use(async (req, res, next) => {
@@ -33,7 +34,6 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/subjects', subjectRoutes);
 app.use('/api/topics', topicRoutes);
@@ -53,10 +53,10 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ✅ Export for Vercel serverless
+// Export for Vercel
 module.exports = app;
 
-// ✅ Only listen locally
+// Only run server locally
 if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 5000;
   mongoose
