@@ -21,14 +21,14 @@ export default function GoogleSignInButton() {
           body: JSON.stringify({ accessToken: tokenResponse.access_token }),
         });
 
-        if (!res.ok) throw new Error('Google login failed');
-
         const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Google login failed');
+
         // data = { token, user: { name, email, picture, ... } }
         login({ ...data.user, token: data.token });
       } catch (err) {
-        setError('Login failed. Please try again.');
-        console.error(err);
+        setError(err.message || 'Login failed. Please try again.');
+        console.error('Google login error:', err);
       } finally {
         setLoading(false);
       }
