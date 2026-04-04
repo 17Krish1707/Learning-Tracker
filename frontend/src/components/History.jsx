@@ -16,6 +16,20 @@ const sessions = [
 ];
 
 function History() {
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [historySessions, setHistorySessions] = React.useState(sessions);
+
+  const filteredSessions = historySessions.filter(s => 
+    s.topic.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    s.subject.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleDeleteAll = () => {
+    if (window.confirm('Delete all session history? This cannot be undone.')) {
+      setHistorySessions([]);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto space-y-10 py-6 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-4">
@@ -39,12 +53,17 @@ function History() {
               <input 
                 type="text" 
                 placeholder="Find session..." 
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
                 className="h-14 w-64 bg-background-primary border border-border rounded-2xl pl-12 pr-4 text-sm font-bold focus:border-accent-primary transition-all shadow-soft outline-none"
               />
            </div>
-           <button className="h-14 px-6 rounded-2xl bg-background-tertiary border border-border text-text-secondary hover:text-text-primary transition-all flex items-center gap-2">
-              <Filter size={18} />
-              <span className="text-sm font-bold">Filters</span>
+           <button 
+             onClick={handleDeleteAll}
+             className="h-14 px-6 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center gap-2 font-bold text-sm"
+           >
+              <HistoryIcon size={18} />
+              Clear Life Logs
            </button>
         </div>
       </div>
@@ -53,7 +72,7 @@ function History() {
         {/* Timeline Summary Area */}
         <div className="lg:col-span-8 space-y-8">
            <AnimatePresence>
-              {sessions.map((session, i) => (
+              {filteredSessions.map((session, i) => (
                 <motion.div 
                   key={session.id}
                   initial={{ opacity: 0, y: 30 }}

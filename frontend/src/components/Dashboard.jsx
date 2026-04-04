@@ -78,16 +78,6 @@ function Dashboard({ subject, topics, onStatusChange, onEditTopic, onAddTopic, o
         </motion.div>
 
         <div className="flex items-center gap-3">
-          <div className="relative">
-             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
-             <input 
-               type="text" 
-               placeholder="Find topic..." 
-               value={searchQuery}
-               onChange={e => setSearchQuery(e.target.value)}
-               className="h-14 w-64 bg-background-primary border border-border rounded-2xl pl-12 pr-4 text-sm font-bold focus:border-accent-primary transition-all shadow-soft outline-none"
-             />
-          </div>
           <button 
             onClick={() => setShowAddTopic(true)}
             className="flex items-center gap-2 h-14 px-8 rounded-2xl bg-accent-primary text-white font-black shadow-premium hover:opacity-90 active:scale-95 transition-all uppercase tracking-widest text-xs"

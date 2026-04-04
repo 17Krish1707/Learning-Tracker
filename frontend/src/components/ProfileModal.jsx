@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, User, BookOpen, Settings, Info, Check, LogOut, Shield, Zap, Globe } from 'lucide-react';
+import { X, User, BookOpen, Settings, Info, Check, LogOut, Shield, Zap, Globe, Sun, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 import { cn } from '../utils/cn';
 
 const AVATAR_OPTIONS = ['🎓', '🧑‍💻', '📚', '🦊', '🐼', '🚀', '🎯', '⚡'];
@@ -12,7 +13,8 @@ const TABS = [
   { id: 'About', icon: Info, label: 'About' }
 ];
 
-function ProfileModal({ profile, onSave, onClose, initialTab = 'Account' }) {
+function ProfileModal({ profile, onSave, onClose, onToggleTheme, initialTab = 'Account' }) {
+  const { updateUser } = useAuth();
   const [activeTab, setActiveTab] = useState(initialTab);
   const [form, setForm] = useState({ ...profile });
   const [saved, setSaved] = useState(false);
@@ -20,6 +22,11 @@ function ProfileModal({ profile, onSave, onClose, initialTab = 'Account' }) {
   const update = (key, value) => setForm(prev => ({ ...prev, [key]: value }));
 
   const handleSave = () => {
+    updateUser({ 
+      name: form.name, 
+      email: form.email, 
+      picture: form.avatar 
+    });
     onSave(form);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -114,9 +121,9 @@ function ProfileModal({ profile, onSave, onClose, initialTab = 'Account' }) {
                        <div className="space-y-2">
                          <label className="text-xs font-bold text-text-muted uppercase tracking-widest block pl-1">Email Address</label>
                          <input 
-                           className="w-full h-12 px-4 bg-background-secondary border border-border rounded-xl text-sm outline-none focus:border-accent-primary transition-colors italic opacity-70" 
+                           className="w-full h-12 px-4 bg-background-secondary border border-border rounded-xl text-sm outline-none focus:border-accent-primary transition-colors" 
                            value={form.email} 
-                           disabled
+                           onChange={e => update('email', e.target.value)}
                            type="email" 
                          />
                        </div>
@@ -159,20 +166,28 @@ function ProfileModal({ profile, onSave, onClose, initialTab = 'Account' }) {
                      <section>
                         <label className="text-xs font-bold text-text-muted uppercase tracking-widest mb-3 block">Theme Preference</label>
                         <div className="grid grid-cols-2 gap-3">
-                          {['dark', 'light'].map(t => (
-                            <button
-                              key={t}
-                              onClick={() => update('theme', t)}
-                              className={cn(
-                                "flex items-center justify-center gap-2 h-12 rounded-xl border text-sm font-bold transition-all",
-                                form.theme === t 
-                                  ? "bg-accent-primary text-white border-accent-primary shadow-md" 
-                                  : "bg-background-tertiary text-text-secondary border-transparent hover:border-border-color"
-                              )}
-                            >
-                              {t === 'dark' ? '🌙 Night' : '☀️ Day'}
-                            </button>
-                          ))}
+                           <button
+                             onClick={() => { if (form.theme !== 'dark') onToggleTheme(); update('theme', 'dark'); }}
+                             className={cn(
+                               "flex items-center justify-center gap-2 h-12 rounded-xl border text-sm font-bold transition-all",
+                               form.theme === 'dark' 
+                                 ? "bg-accent-primary text-white border-accent-primary shadow-md" 
+                                 : "bg-background-tertiary text-text-secondary border-transparent hover:border-border-color"
+                             )}
+                           >
+                             🌙 Night
+                           </button>
+                           <button
+                             onClick={() => { if (form.theme !== 'light') onToggleTheme(); update('theme', 'light'); }}
+                             className={cn(
+                               "flex items-center justify-center gap-2 h-12 rounded-xl border text-sm font-bold transition-all",
+                               form.theme === 'light' 
+                                 ? "bg-accent-primary text-white border-accent-primary shadow-md" 
+                                 : "bg-background-tertiary text-text-secondary border-transparent hover:border-border-color"
+                             )}
+                           >
+                             ☀️ Day
+                           </button>
                         </div>
                      </section>
 

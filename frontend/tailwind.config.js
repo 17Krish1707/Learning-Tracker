@@ -56,6 +56,7 @@ export default {
         'fade-in': 'fadeIn 0.3s ease-out forwards',
         'slide-up': 'slideUp 0.4s ease-out forwards',
         'pulse-subtle': 'pulseSubtle 2s infinite ease-in-out',
+        'gradient-x': 'gradientX 6s ease infinite',
       },
       keyframes: {
         fadeIn: {
@@ -69,6 +70,10 @@ export default {
         pulseSubtle: {
           '0%, 100%': { opacity: '1', transform: 'scale(1)' },
           '50%': { opacity: '0.85', transform: 'scale(0.98)' },
+        },
+        gradientX: {
+          '0%, 100%': { 'background-size': '200% 200%', 'background-position': 'left center' },
+          '50%': { 'background-size': '200% 200%', 'background-position': 'right center' },
         },
       }
     },

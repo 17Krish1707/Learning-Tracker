@@ -46,9 +46,13 @@ function App() {
     { id: 'n2', type: 'streak', message: '🔥 5-day streak! Keep it up!', time: '1h ago', read: false },
     { id: 'n3', type: 'complete', message: 'Arrays & Strings marked as Completed', time: '3h ago', read: true },
   ]);
+  const [globalSearch, setGlobalSearch] = useState('');
   const { user, loading } = useAuth();
 
-  const activeTopics = topics.filter(t => t.subjectId === activeSubjectId);
+  const activeTopics = topics
+    .filter(t => t.subjectId === activeSubjectId)
+    .filter(t => t.title.toLowerCase().includes(globalSearch.toLowerCase()));
+
   const activeSubject = subjects.find(s => s.id === activeSubjectId);
 
   React.useEffect(() => {
@@ -59,6 +63,18 @@ function App() {
       document.documentElement.classList.remove('dark');
     }
   }, [profile.theme]);
+
+  // Sync user state with profile state
+  React.useEffect(() => {
+    if (user) {
+      setProfile(prev => ({
+        ...prev,
+        name: user.name || prev.name,
+        email: user.email || prev.email,
+        avatar: user.picture || prev.avatar
+      }));
+    }
+  }, [user]);
 
   const addNotification = (message, type = 'info') => {
     setNotifications(prev => [{ id: Date.now().toString(), type, message, time: 'just now', read: false }, ...prev].slice(0, 20));
@@ -187,6 +203,8 @@ function App() {
         onMarkAllRead={markAllRead} 
         onOpenProfile={(tab = 'Account') => { setShowProfile(tab); }} 
         onToggleTheme={handleToggleTheme} 
+        searchTerm={globalSearch}
+        onSearchChange={setGlobalSearch}
       />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
@@ -222,7 +240,7 @@ function App() {
           )}
         </main>
       </div>
-      {showProfile && <ProfileModal profile={profile} onSave={handleSaveProfile} onClose={() => setShowProfile(false)} initialTab={typeof showProfile === 'string' ? showProfile : 'Account'} />}
+      {showProfile && <ProfileModal profile={profile} onSave={handleSaveProfile} onClose={() => setShowProfile(false)} onToggleTheme={handleToggleTheme} initialTab={typeof showProfile === 'string' ? showProfile : 'Account'} />}
     </div>
   );
 }

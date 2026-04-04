@@ -41,7 +41,7 @@ export default function GoogleSignInButton() {
       <button
         onClick={() => { setError(null); handleGoogleLogin(); }}
         disabled={loading}
-        className="group relative flex h-11 w-full max-w-[280px] items-center justify-center gap-3 overflow-hidden rounded-xl border border-border-color bg-background-primary px-4 font-semibold text-text-primary transition-all hover:bg-background-secondary active:scale-95 disabled:opacity-50 disabled:pointer-events-none shadow-sm hover:shadow-md"
+        className="group relative flex h-14 w-full max-w-[320px] items-center justify-center gap-3 overflow-hidden rounded-2xl border border-border shadow-soft bg-background-primary px-6 font-bold text-text-primary transition-all hover:bg-background-secondary active:scale-95 disabled:opacity-50 disabled:pointer-events-none hover:shadow-premium"
       >
         {loading ? (
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent-primary border-t-transparent" />

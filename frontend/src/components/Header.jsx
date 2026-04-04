@@ -5,13 +5,28 @@ import { useAuth } from '../context/AuthContext';
 import { cn } from '../utils/cn';
 import GoogleSignInButton from './GoogleSignInButton';
 
-function Header({ streak, profile, notifications, onMarkAllRead, onOpenProfile, onToggleTheme }) {
+function Header({ 
+  streak, profile, notifications, onMarkAllRead, onOpenProfile, onToggleTheme,
+  searchTerm, onSearchChange 
+}) {
   const [showNotifs, setShowNotifs] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const ref = useRef(null);
   const userMenuRef = useRef(null);
+  const searchInputRef = useRef(null);
   const unread = notifications.filter(n => !n.read).length;
   const { user, loading, logout } = useAuth();
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     const handler = (e) => {
@@ -33,14 +48,17 @@ function Header({ streak, profile, notifications, onMarkAllRead, onOpenProfile, 
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-accent-primary to-accent-secondary text-white shadow-lg shadow-accent-primary/20 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
               <Layers size={22} strokeWidth={2.5} />
             </div>
-            <span className="text-2xl font-black tracking-tighter text-text-primary uppercase">StudyTrack</span>
+            <span className="text-2xl font-black tracking-tighter uppercase bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-sky-500 animate-gradient-x bg-[length:200%_auto]">StudyTrack</span>
           </div>
 
           <div className="hidden lg:flex relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-accent-primary transition-colors" size={18} />
             <input 
+              ref={searchInputRef}
               type="text" 
               placeholder="Search anything..." 
+              value={searchTerm}
+              onChange={(e) => onSearchChange(e.target.value)}
               className="h-11 w-80 rounded-2xl border border-border bg-background-secondary/50 pl-12 pr-12 text-sm font-bold text-text-primary placeholder:text-text-muted focus:border-accent-primary focus:bg-background-primary focus:ring-4 focus:ring-accent-primary/10 transition-all outline-none"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 px-2 py-1 bg-background-tertiary rounded-lg border border-border opacity-60 group-focus-within:opacity-0 transition-opacity">
@@ -126,8 +144,12 @@ function Header({ streak, profile, notifications, onMarkAllRead, onOpenProfile, 
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center gap-3 p-1.5 pr-4 rounded-2xl bg-background-tertiary/50 border border-border hover:bg-background-secondary transition-all group"
               >
-                <div className="h-9 w-9 rounded-xl bg-accent-primary flex items-center justify-center text-white font-black text-sm overflow-hidden border-2 border-white dark:border-gray-900 shadow-md transition-transform group-hover:scale-105">
-                  {user.picture ? <img src={user.picture} alt="" className="h-full w-full object-cover" /> : user.name?.[0] || 'U'}
+                <div className={cn("h-9 w-9 rounded-xl flex items-center justify-center text-white font-black text-sm overflow-hidden border-2 border-white dark:border-gray-900 shadow-md transition-transform group-hover:scale-105", !user.picture?.startsWith('http') && "bg-accent-primary text-lg")}>
+                  {user.picture?.startsWith('http') ? (
+                    <img src={user.picture} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    user.picture || user.name?.[0] || 'U'
+                  )}
                 </div>
                 <div className="text-left hidden md:block">
                    <p className="text-xs font-black text-text-primary truncate max-w-[100px] uppercase tracking-tighter">{user.name}</p>
