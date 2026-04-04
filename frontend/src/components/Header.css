@@ -175,3 +175,11 @@
 .profile-chip:hover { background: var(--bg-subtle-hover); }
 .profile-chip-avatar { font-size: 1.2rem; }
 .profile-chip-name { font-size: 0.82rem; font-weight: 600; color: var(--text-primary, #fff); }
+
+.auth-loading {
+  width: 120px; height: 36px;
+  border-radius: 22px;
+  background: rgba(255,255,255,0.06);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }

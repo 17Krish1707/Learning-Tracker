@@ -1,0 +1,38 @@
+.gsib-wrapper { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+
+.gsib-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  border-radius: 22px;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.1s;
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+}
+.gsib-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.3);
+  transform: translateY(-1px);
+}
+.gsib-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.gsib-icon { width: 18px; height: 18px; flex-shrink: 0; }
+
+.gsib-spinner {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: gsib-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes gsib-spin { to { transform: rotate(360deg); } }
+
+.gsib-error { font-size: 0.72rem; color: #ff5c5c; margin: 0; }

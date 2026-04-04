@@ -3,6 +3,7 @@ import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import ProfileModal from './components/ProfileModal';
+import { useAuth } from './context/AuthContext';
 
 const initialFolders = [
   { id: 'f1', name: 'Academics', emoji: '🎓', color: '#7c6ff7' },
@@ -40,6 +41,7 @@ function App() {
     { id: 'n2', type: 'streak', message: '🔥 5-day streak! Keep it up!', time: '1h ago', read: false },
     { id: 'n3', type: 'complete', message: 'Arrays & Strings marked as Completed', time: '3h ago', read: true },
   ]);
+  const { user, loading } = useAuth();
 
   const activeTopics = topics.filter(t => t.subjectId === activeSubjectId);
   const activeSubject = subjects.find(s => s.id === activeSubjectId);
@@ -125,7 +127,26 @@ function App() {
     setProfile(prev => ({ ...prev, theme: newTheme }));
   };
 
+  if (loading) return <div className="app-loading">Loading…</div>;
+
+  if (!user) {
+    return (
+      <div className="app-container">
+        <Header streak={0} profile={{ avatar:'🎓', name:'Guest' }} notifications={[]} onMarkAllRead={()=>{}} onOpenProfile={()=>{}} />
+        <div className="landing-gate">
+          <div className="gate-card glass-panel">
+            <span style={{ fontSize:'3rem' }}>📖</span>
+            <h1>StudyTrack</h1>
+            <p>Sign in with Google to start tracking your learning journey.</p>
+            <GoogleSignInButton />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
+    
     <div className="app-container">
       <Header streak={streak} profile={profile} notifications={notifications} onMarkAllRead={markAllRead} onOpenProfile={() => setShowProfile(true)} onToggleTheme={handleToggleTheme} />
       <div className="main-content">

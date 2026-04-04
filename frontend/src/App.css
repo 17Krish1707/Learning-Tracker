@@ -182,3 +182,15 @@
     border-right-color: var(--border);
   }
 }
+/* Add to App.css or index.css */
+.landing-gate {
+  display: flex; align-items: center; justify-content: center;
+  flex: 1; padding: 40px;
+}
+.gate-card {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 16px; padding: 48px 40px;
+  border-radius: 20px; text-align: center; max-width: 360px;
+}
+.gate-card h1 { font-size: 1.8rem; margin: 0; color: #fff; }
+.gate-card p { color: rgba(255,255,255,0.5); margin: 0; line-height: 1.6; }

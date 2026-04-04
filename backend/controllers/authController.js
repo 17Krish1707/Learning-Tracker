@@ -118,5 +118,55 @@ const updateMe = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+const { OAuth2Client } = require('google-auth-library');
+// npm install google-auth-library
 
-module.exports = { register, login, getMe, updateMe };
+const googleClient = new OAuth2Client();
+
+// @desc    Google OAuth login
+// @route   POST /api/auth/google
+const googleLogin = async (req, res) => {
+  try {
+    const { accessToken } = req.body;
+    if (!accessToken) return res.status(400).json({ success: false, message: 'Access token required.' });
+
+    // Fetch user info from Google using the access token
+    const googleRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!googleRes.ok) return res.status(401).json({ success: false, message: 'Invalid Google token.' });
+
+    const { name, email, picture, sub: googleId } = await googleRes.json();
+
+    // Find or create user
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Generate a random password for Google users (they'll never use it)
+      const randomPassword = Math.random().toString(36).slice(-16) + 'Aa1!';
+      user = await User.create({ name, email, password: randomPassword, avatar: '🎓' });
+    }
+
+    const token = generateToken(user._id);
+
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        picture,           // Google profile picture URL
+        avatar: user.avatar,
+        streakDays: user.streakDays,
+        studyGoal: user.studyGoal,
+        weeklyTarget: user.weeklyTarget,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+module.exports = { register, login, getMe, updateMe, googleLogin };
