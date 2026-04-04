@@ -41,6 +41,7 @@ function App() {
   const [streak, setStreak] = useState(5);
   const [profile, setProfile] = useState(initialProfile);
   const [showProfile, setShowProfile] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState([
     { id: 'n1', type: 'deadline', message: 'Arrays & Strings deadline in 7 days', time: '2m ago', read: false },
     { id: 'n2', type: 'streak', message: '🔥 5-day streak! Keep it up!', time: '1h ago', read: false },
@@ -205,15 +206,20 @@ function App() {
         onToggleTheme={handleToggleTheme} 
         searchTerm={globalSearch}
         onSearchChange={setGlobalSearch}
+        onMenuToggle={() => setIsSidebarOpen(true)}
       />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
           folders={folders}
           subjects={subjects}
           activeSubjectId={activeSubjectId}
-          setActiveSubjectId={(id) => { setActiveSubjectId(id); setActiveView(id === null ? 'dashboard' : 'subject'); }}
+          setActiveSubjectId={(id) => { 
+            setActiveSubjectId(id); 
+            setActiveView(id === null ? 'dashboard' : 'subject');
+            setIsSidebarOpen(false);
+          }}
           activeView={activeView}
-          setActiveView={setActiveView}
+          setActiveView={(view) => { setActiveView(view); setIsSidebarOpen(false); }}
           onAddFolder={handleAddFolder}
           onEditFolder={handleEditFolder}
           onDeleteFolder={handleDeleteFolder}
@@ -221,6 +227,8 @@ function App() {
           onEditSubject={handleEditSubject}
           onDeleteSubject={handleDeleteSubject}
           profile={profile}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
         />
         <main className="flex-1 overflow-y-auto bg-background-secondary/30 p-6 lg:p-10">
           {activeView === 'stats' ? (

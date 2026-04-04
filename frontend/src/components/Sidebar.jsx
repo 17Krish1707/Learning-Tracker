@@ -12,7 +12,8 @@ function Sidebar({
   activeView, setActiveView,
   onAddFolder, onEditFolder, onDeleteFolder,
   onAddSubject, onEditSubject, onDeleteSubject,
-  profile 
+  profile,
+  isOpen, onClose
 }) {
   const [collapsedFolders, setCollapsedFolders] = useState({});
   const [modal, setModal] = useState(null);
@@ -67,8 +68,28 @@ function Sidebar({
 
   return (
     <>
-      <aside className="w-72 flex-shrink-0 border-r border-border bg-background-primary overflow-y-auto hidden lg:flex flex-col">
-        <div className="p-6 space-y-8 flex-1">
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      <aside className={cn(
+        "fixed inset-y-0 left-0 z-[70] w-72 bg-background-primary border-r border-border flex flex-col transition-transform duration-300 transform lg:translate-x-0 lg:static lg:flex lg:h-full",
+        isOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <div className="p-6 space-y-8 flex-1 overflow-y-auto">
+          <div className="flex items-center justify-between lg:hidden mb-6">
+             <span className="text-sm font-black uppercase tracking-widest text-accent-primary">Nav. Menu</span>
+             <button onClick={onClose} className="p-2 rounded-xl bg-background-tertiary text-text-muted"><Icons.X size={20} /></button>
+          </div>
+          
           <div className="space-y-1">
             <div className="px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted mb-4 opacity-50">Command Center</div>
             <NavItem 

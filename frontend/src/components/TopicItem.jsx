@@ -109,7 +109,7 @@ function TopicItem({ topic, index, onStatusChange, onLogTime, onDeleteTopic, onE
           )}
         </div>
 
-        <div className="flex items-center gap-2 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
           <button 
             onClick={() => setShowLogger(!showLogger)}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${

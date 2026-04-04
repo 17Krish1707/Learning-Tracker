@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, Flame, Moon, Sun, Layers, Search, ChevronDown, LogOut, Settings, User as UserIcon, Zap, Command } from 'lucide-react';
+import { Bell, Flame, Moon, Sun, Layers, Search, ChevronDown, LogOut, Settings, User as UserIcon, Zap, Command, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { cn } from '../utils/cn';
@@ -7,7 +7,7 @@ import GoogleSignInButton from './GoogleSignInButton';
 
 function Header({ 
   streak, profile, notifications, onMarkAllRead, onOpenProfile, onToggleTheme,
-  searchTerm, onSearchChange 
+  searchTerm, onSearchChange, onMenuToggle
 }) {
   const [showNotifs, setShowNotifs] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -43,12 +43,19 @@ function Header({
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background-glass backdrop-blur-xl">
       <div className="mx-auto flex h-20 max-w-full items-center justify-between px-8">
         {/* Left Side: Brand & Search */}
-        <div className="flex items-center gap-12">
-          <div className="flex items-center gap-3 group cursor-pointer">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-accent-primary to-accent-secondary text-white shadow-lg shadow-accent-primary/20 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-              <Layers size={22} strokeWidth={2.5} />
+        <div className="flex items-center gap-4 lg:gap-12">
+          <button 
+            onClick={onMenuToggle}
+            className="lg:hidden p-2 rounded-xl bg-background-tertiary text-text-primary hover:bg-background-secondary transition-colors"
+          >
+            <Menu size={24} />
+          </button>
+          
+          <div className="flex items-center gap-3 group cursor-pointer shrink-0">
+            <div className="flex h-10 w-10 lg:h-11 lg:w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-accent-primary to-accent-secondary text-white shadow-lg shadow-accent-primary/20 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+              <Layers size={20} className="lg:w-[22px] lg:h-[22px]" strokeWidth={2.5} />
             </div>
-            <span className="text-2xl font-black tracking-tighter uppercase bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-sky-500 animate-gradient-x bg-[length:200%_auto]">StudyTrack</span>
+            <span className="text-xl lg:text-2xl font-black tracking-tighter uppercase bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-sky-500 animate-gradient-x bg-[length:200%_auto]">StudyTrack</span>
           </div>
 
           <div className="hidden lg:flex relative group">
