@@ -1,358 +1,276 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import * as Icons from 'lucide-react';
-import './Sidebar.css';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '../utils/cn';
 
 const ICON_OPTIONS = ['Code2', 'Coffee', 'Database', 'Cpu', 'Book', 'Globe', 'Layers', 'Terminal', 'Zap', 'Star'];
-const COLOR_OPTIONS = ['#ff5c5c', '#5c5cff', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4', '#f97316'];
+const COLOR_OPTIONS = ['#6366f1', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4', '#f97316'];
 const FOLDER_EMOJIS = ['📁', '🎓', '💻', '🔬', '🎨', '📊', '🏋️', '🌍', '🎵', '⚙️'];
-const FOLDER_COLORS = ['#7c6ff7', '#10b981', '#f59e0b', '#ff5c5c', '#06b6d4', '#ec4899'];
 
-function getIcon(iconName, size = 18) {
-  const IconComponent = Icons[iconName] || Icons.Book;
-  return <IconComponent size={size} />;
-}
-
-// Reusable context menu
-function ContextMenu({ x, y, items, onClose }) {
-  const ref = useRef(null);
-  useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [onClose]);
-
-  return (
-    <div ref={ref} className="ctx-menu glass-panel" style={{ top: y, left: x }}>
-      {items.map((item, i) => item === 'divider'
-        ? <div key={i} className="ctx-divider" />
-        : (
-          <button key={i} className={`ctx-item ${item.danger ? 'danger' : ''}`}
-            onClick={() => { item.action(); onClose(); }}>
-            {item.icon && <span className="ctx-icon">{item.icon}</span>}
-            {item.label}
-          </button>
-        )
-      )}
-    </div>
-  );
-}
-
-// Inline editable text
-function InlineEdit({ value, onSave, onCancel, className }) {
-  const [val, setVal] = useState(value);
-  const inputRef = useRef(null);
-  useEffect(() => inputRef.current?.focus(), []);
-  const commit = () => { if (val.trim()) onSave(val.trim()); else onCancel(); };
-  return (
-    <input
-      ref={inputRef}
-      className={`inline-edit ${className || ''}`}
-      value={val}
-      onChange={e => setVal(e.target.value)}
-      onBlur={commit}
-      onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') onCancel(); }}
-      onClick={e => e.stopPropagation()}
-    />
-  );
-}
-
-// Add/Edit Subject modal
-function SubjectModal({ initial, folders, onSave, onClose }) {
-  const [name, setName] = useState(initial?.name || '');
-  const [color, setColor] = useState(initial?.color || COLOR_OPTIONS[0]);
-  const [icon, setIcon] = useState(initial?.iconName || ICON_OPTIONS[0]);
-  const [folderId, setFolderId] = useState(initial?.folderId || null);
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-panel glass-panel" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>{initial ? 'Edit Subject' : 'New Subject'}</h2>
-          <button className="icon-btn-small" onClick={onClose}><Icons.X size={16} /></button>
-        </div>
-        <div className="modal-body">
-          <label className="modal-label">Name</label>
-          <input className="modal-input" value={name} onChange={e => setName(e.target.value)}
-            placeholder="e.g. Algorithms" autoFocus onKeyDown={e => e.key === 'Enter' && name.trim() && onSave({ name, color, iconName: icon, folderId })} />
-
-          <label className="modal-label">Folder</label>
-          <select className="modal-input" value={folderId || ''} onChange={e => setFolderId(e.target.value || null)}>
-            <option value="">No Folder (Uncategorized)</option>
-            {folders.map(f => <option key={f.id} value={f.id}>{f.emoji} {f.name}</option>)}
-          </select>
-
-          <label className="modal-label">Color</label>
-          <div className="color-picker">
-            {COLOR_OPTIONS.map(c => (
-              <button key={c} className={`color-dot ${color === c ? 'selected' : ''}`}
-                style={{ backgroundColor: c }} onClick={() => setColor(c)} />
-            ))}
-          </div>
-
-          <label className="modal-label">Icon</label>
-          <div className="icon-picker">
-            {ICON_OPTIONS.map(ic => (
-              <button key={ic} className={`icon-option ${icon === ic ? 'selected' : ''}`}
-                style={icon === ic ? { borderColor: color, color, backgroundColor: `${color}15` } : {}}
-                onClick={() => setIcon(ic)}>{getIcon(ic, 16)}</button>
-            ))}
-          </div>
-
-          <div className="subject-preview">
-            <div className="subject-icon" style={{ backgroundColor: `${color}15`, color, borderColor: `${color}30` }}>
-              {getIcon(icon)}
-            </div>
-            <span style={{ color: 'var(--text-primary, #fff)', fontWeight: 500 }}>{name || 'Subject Name'}</span>
-          </div>
-
-          <button className="modal-submit-btn" style={{ backgroundColor: color }}
-            onClick={() => name.trim() && onSave({ name, color, iconName: icon, folderId })}>
-            {initial ? 'Save Changes' : 'Add Subject'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Add/Edit Folder modal
-function FolderModal({ initial, onSave, onClose }) {
-  const [name, setName] = useState(initial?.name || '');
-  const [emoji, setEmoji] = useState(initial?.emoji || FOLDER_EMOJIS[0]);
-  const [color, setColor] = useState(initial?.color || FOLDER_COLORS[0]);
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-panel glass-panel" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>{initial ? 'Edit Folder' : 'New Folder'}</h2>
-          <button className="icon-btn-small" onClick={onClose}><Icons.X size={16} /></button>
-        </div>
-        <div className="modal-body">
-          <label className="modal-label">Folder Name</label>
-          <input className="modal-input" value={name} onChange={e => setName(e.target.value)}
-            placeholder="e.g. Academics" autoFocus
-            onKeyDown={e => e.key === 'Enter' && name.trim() && onSave({ name, emoji, color })} />
-
-          <label className="modal-label">Emoji</label>
-          <div className="emoji-picker">
-            {FOLDER_EMOJIS.map(em => (
-              <button key={em} className={`emoji-opt ${emoji === em ? 'selected' : ''}`}
-                style={emoji === em ? { borderColor: color, backgroundColor: `${color}20` } : {}}
-                onClick={() => setEmoji(em)}>{em}</button>
-            ))}
-          </div>
-
-          <label className="modal-label">Color</label>
-          <div className="color-picker">
-            {FOLDER_COLORS.map(c => (
-              <button key={c} className={`color-dot ${color === c ? 'selected' : ''}`}
-                style={{ backgroundColor: c }} onClick={() => setColor(c)} />
-            ))}
-          </div>
-
-          <div className="folder-preview" style={{ borderColor: `${color}40`, backgroundColor: `${color}10` }}>
-            <span style={{ fontSize: '1.2rem' }}>{emoji}</span>
-            <span style={{ color: 'var(--text-primary,#fff)', fontWeight: 600 }}>{name || 'Folder Name'}</span>
-          </div>
-
-          <button className="modal-submit-btn" style={{ backgroundColor: color }}
-            onClick={() => name.trim() && onSave({ name, emoji, color })}>
-            {initial ? 'Save Changes' : 'Create Folder'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Sidebar({ folders, subjects, activeSubjectId, setActiveSubjectId,
+function Sidebar({ 
+  folders, subjects, activeSubjectId, setActiveSubjectId,
+  activeView, setActiveView,
   onAddFolder, onEditFolder, onDeleteFolder,
   onAddSubject, onEditSubject, onDeleteSubject,
-  profile, onOpenProfile }) {
-
+  profile 
+}) {
   const [collapsedFolders, setCollapsedFolders] = useState({});
-  const [ctxMenu, setCtxMenu] = useState(null); // { x, y, items }
-  const [modal, setModal] = useState(null); // { type: 'addSubject'|'editSubject'|'addFolder'|'editFolder', data? }
-  const [deleteConfirm, setDeleteConfirm] = useState(null); // { type, id, name }
+  const [modal, setModal] = useState(null);
+  const [formData, setFormData] = useState({});
 
   const toggleFolder = (id) => setCollapsedFolders(prev => ({ ...prev, [id]: !prev[id] }));
 
-  const openCtx = (e, items) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setCtxMenu({ x: e.clientX, y: e.clientY, items });
-  };
-
-  // Group subjects by folder
   const subjectsByFolder = (folderId) => subjects.filter(s => s.folderId === folderId);
   const uncategorized = subjects.filter(s => !s.folderId || !folders.find(f => f.id === s.folderId));
 
+  const handleOpenModal = (type, existingData = null) => {
+    setModal({ type, existingData });
+    setFormData(existingData || (type === 'addFolder' ? { name: '', emoji: '📁', color: '#6366f1' } : { name: '', folderId: '', iconName: 'Book', color: '#6366f1' }));
+  };
+
+  const handleModalSubmit = (e) => {
+    e.preventDefault();
+    if (modal.type === 'addFolder') onAddFolder(formData);
+    else if (modal.type === 'addSubject') onAddSubject(formData);
+    setModal(null);
+  };
+
+  const NavItem = ({ icon: Icon, label, active, onClick, badge, color }) => (
+    <button 
+      onClick={onClick}
+      className={cn(
+        "group flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-medium transition-all",
+        active 
+          ? 'bg-accent-primary text-white shadow-lg shadow-accent-primary/20' 
+          : 'text-text-secondary hover:bg-background-tertiary hover:text-text-primary'
+      )}
+    >
+      <div className="flex items-center gap-3">
+        <div className={cn(
+          "flex h-8 w-8 items-center justify-center rounded-lg transition-all",
+          active ? 'bg-white/20' : 'bg-background-secondary border border-border group-hover:border-accent-primary/30'
+        )} style={!active && color ? { color: color } : {}}>
+          <Icon size={16} />
+        </div>
+        <span className="truncate max-w-[140px]">{label}</span>
+      </div>
+      {badge !== undefined && (
+        <span className={cn(
+          "flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold",
+          active ? 'bg-white/30 text-white' : 'bg-background-tertiary text-text-muted'
+        )}>
+          {badge}
+        </span>
+      )}
+    </button>
+  );
+
   return (
     <>
-      <aside className="sidebar glass-panel">
-        <div className="sidebar-header">
-          <h2 className="sidebar-title">Library</h2>
-          <div className="sidebar-header-btns">
-            <button className="icon-btn-small" title="New Folder" onClick={() => setModal({ type: 'addFolder' })}>
-              <Icons.FolderPlus size={15} />
-            </button>
-            <button className="icon-btn-small" title="New Subject" onClick={() => setModal({ type: 'addSubject' })}>
-              <Icons.Plus size={15} />
-            </button>
+      <aside className="w-72 flex-shrink-0 border-r border-border bg-background-primary overflow-y-auto hidden lg:flex flex-col">
+        <div className="p-6 space-y-8 flex-1">
+          <div className="space-y-1">
+            <div className="px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted mb-4 opacity-50">Command Center</div>
+            <NavItem 
+              icon={Icons.LayoutDashboard} 
+              label="Overview" 
+              active={activeView === 'dashboard'} 
+              onClick={() => { setActiveSubjectId(null); setActiveView('dashboard'); }} 
+            />
+            <NavItem 
+              icon={Icons.BarChart3} 
+              label="Statistics" 
+              active={activeView === 'stats'}
+              onClick={() => setActiveView('stats')}
+            />
+            <NavItem 
+              icon={Icons.Clock} 
+              label="History" 
+              active={activeView === 'history'}
+              onClick={() => setActiveView('history')}
+            />
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between px-3">
+              <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted opacity-50">Curriculum</h3>
+              <div className="flex gap-1">
+                <button onClick={() => handleOpenModal('addFolder')} className="p-1 rounded-lg text-text-muted hover:bg-background-tertiary hover:text-accent-primary transition-colors">
+                  <Icons.FolderPlus size={14} />
+                </button>
+                <button onClick={() => handleOpenModal('addSubject')} className="p-1 rounded-lg text-text-muted hover:bg-background-tertiary hover:text-accent-primary transition-colors">
+                  <Icons.Plus size={14} />
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              {folders.map(folder => {
+                const folderSubjects = subjectsByFolder(folder.id);
+                const isCollapsed = collapsedFolders[folder.id];
+                return (
+                  <div key={folder.id} className="space-y-1">
+                    <button 
+                      onClick={() => toggleFolder(folder.id)}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-text-secondary hover:bg-background-tertiary transition-all group"
+                    >
+                      <Icons.ChevronDown size={14} className={cn("transition-transform duration-200 opacity-40 group-hover:opacity-100", isCollapsed && "-rotate-90")} />
+                      <span className="text-base leading-none">{folder.emoji}</span>
+                      <span className="flex-1 text-left truncate">{folder.name}</span>
+                      <span className="text-[10px] font-black opacity-30 group-hover:opacity-100">{folderSubjects.length}</span>
+                    </button>
+                    {!isCollapsed && (
+                      <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="pl-4 space-y-1 border-l-2 border-border/40 ml-4">
+                        {folderSubjects.map(subject => (
+                          <NavItem 
+                            key={subject.id}
+                            icon={Icons[subject.iconName] || Icons.Book}
+                            label={subject.name}
+                            active={activeSubjectId === subject.id}
+                            onClick={() => setActiveSubjectId(subject.id)}
+                            color={subject.color}
+                          />
+                        ))}
+                      </motion.div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {uncategorized.length > 0 && (
+                <div className="pt-4 space-y-1">
+                  <div className="px-3 py-2 text-[9px] font-black text-text-muted uppercase tracking-widest opacity-40">Loose Subjects</div>
+                  {uncategorized.map(subject => (
+                    <NavItem 
+                      key={subject.id}
+                      icon={Icons[subject.iconName] || Icons.Book}
+                      label={subject.name}
+                      active={activeSubjectId === subject.id}
+                      onClick={() => setActiveSubjectId(subject.id)}
+                      color={subject.color}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="subject-list">
-          {/* Folders */}
-          {folders.map(folder => {
-            const folderSubjects = subjectsByFolder(folder.id);
-            const isCollapsed = collapsedFolders[folder.id];
-            return (
-              <div key={folder.id} className="folder-group">
-                <div className="folder-row"
-                  onClick={() => toggleFolder(folder.id)}
-                  onContextMenu={e => openCtx(e, [
-                    { label: 'Add Subject here', icon: <Icons.Plus size={13} />, action: () => setModal({ type: 'addSubject', data: { folderId: folder.id } }) },
-                    { label: 'Rename Folder', icon: <Icons.Pencil size={13} />, action: () => setModal({ type: 'editFolder', data: folder }) },
-                    'divider',
-                    { label: 'Delete Folder', icon: <Icons.Trash2 size={13} />, danger: true, action: () => setDeleteConfirm({ type: 'folder', id: folder.id, name: folder.name }) },
-                  ])}
-                >
-                  <span className="folder-chevron" style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>
-                    <Icons.ChevronDown size={13} />
-                  </span>
-                  <span className="folder-emoji">{folder.emoji}</span>
-                  <span className="folder-name" style={{ color: folder.color }}>{folder.name}</span>
-                  <span className="folder-count">{folderSubjects.length}</span>
-                  <button className="folder-menu-btn icon-btn-small"
-                    onClick={e => openCtx(e, [
-                      { label: 'Add Subject', icon: <Icons.Plus size={13} />, action: () => setModal({ type: 'addSubject', data: { folderId: folder.id } }) },
-                      { label: 'Edit Folder', icon: <Icons.Pencil size={13} />, action: () => setModal({ type: 'editFolder', data: folder }) },
-                      'divider',
-                      { label: 'Delete Folder', icon: <Icons.Trash2 size={13} />, danger: true, action: () => setDeleteConfirm({ type: 'folder', id: folder.id, name: folder.name }) },
-                    ])}>
-                    <Icons.MoreHorizontal size={14} />
-                  </button>
-                </div>
-
-                {!isCollapsed && (
-                  <div className="folder-subjects">
-                    {folderSubjects.map(subject => (
-                      <SubjectItem key={subject.id} subject={subject} isActive={activeSubjectId === subject.id}
-                        onClick={() => setActiveSubjectId(subject.id)}
-                        onContextMenu={e => openCtx(e, [
-                          { label: 'Edit Subject', icon: <Icons.Pencil size={13} />, action: () => setModal({ type: 'editSubject', data: subject }) },
-                          'divider',
-                          { label: 'Delete Subject', icon: <Icons.Trash2 size={13} />, danger: true, action: () => setDeleteConfirm({ type: 'subject', id: subject.id, name: subject.name }) },
-                        ])}
-                      />
-                    ))}
-                    {folderSubjects.length === 0 && (
-                      <div className="folder-empty">No subjects yet</div>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-
-          {/* Uncategorized */}
-          {uncategorized.length > 0 && (
-            <div className="folder-group">
-              <div className="folder-row folder-row-uncategorized">
-                <span className="folder-emoji">📂</span>
-                <span className="folder-name">Uncategorized</span>
-                <span className="folder-count">{uncategorized.length}</span>
-              </div>
-              <div className="folder-subjects">
-                {uncategorized.map(subject => (
-                  <SubjectItem key={subject.id} subject={subject} isActive={activeSubjectId === subject.id}
-                    onClick={() => setActiveSubjectId(subject.id)}
-                    onContextMenu={e => openCtx(e, [
-                      { label: 'Edit Subject', icon: <Icons.Pencil size={13} />, action: () => setModal({ type: 'editSubject', data: subject }) },
-                      'divider',
-                      { label: 'Delete Subject', icon: <Icons.Trash2 size={13} />, danger: true, action: () => setDeleteConfirm({ type: 'subject', id: subject.id, name: subject.name }) },
-                    ])}
-                  />
-                ))}
-              </div>
+        <div className="p-6">
+          <div className="rounded-3xl bg-gradient-to-br from-accent-primary/10 via-accent-secondary/5 to-transparent p-5 border border-accent-primary/10 relative overflow-hidden group">
+            <div className="absolute -right-4 -top-4 h-20 w-20 bg-accent-primary/10 rounded-full blur-2xl group-hover:scale-150 transition-transform" />
+            <p className="text-[10px] font-black text-accent-primary uppercase tracking-widest mb-3">Weekly Target</p>
+            <div className="flex items-end justify-between mb-2">
+              <span className="text-3xl font-black text-text-primary tracking-tighter">85<span className="text-lg opacity-40">%</span></span>
+              <span className="text-[11px] text-text-secondary font-bold mb-1 opacity-60">17/20h</span>
             </div>
-          )}
-        </div>
-
-        {/* Profile */}
-        <div className="sidebar-footer">
-          <button className="profile-btn" onClick={onOpenProfile}>
-            <span style={{ fontSize: '1.1rem' }}>{profile.avatar}</span>
-            <span>{profile.name}</span>
-            <Icons.Settings size={14} className="settings-icon" />
-          </button>
+            <div className="h-1.5 w-full rounded-full bg-background-secondary border border-border/50 overflow-hidden">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: '85%' }}
+                className="h-full bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full" 
+              />
+            </div>
+          </div>
         </div>
       </aside>
 
-      {/* Context Menu */}
-      {ctxMenu && (
-        <ContextMenu x={ctxMenu.x} y={ctxMenu.y} items={ctxMenu.items} onClose={() => setCtxMenu(null)} />
-      )}
+      <AnimatePresence>
+        {modal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setModal(null)}>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="w-full max-w-md rounded-4xl bg-background-primary shadow-premium border border-border overflow-hidden"
+              onClick={e => e.stopPropagation()}
+            >
+               <div className="p-8">
+                  <div className="flex items-center justify-between mb-8">
+                    <h2 className="text-2xl font-black text-text-primary uppercase tracking-tight">
+                      {modal.type === 'addFolder' ? 'Create Folder' : 'New Subject'}
+                    </h2>
+                    <button onClick={() => setModal(null)} className="h-10 w-10 flex items-center justify-center rounded-xl bg-background-secondary border border-border text-text-muted hover:text-text-primary transition-all">
+                      <Icons.X size={18} />
+                    </button>
+                  </div>
+                  
+                  <form onSubmit={handleModalSubmit} className="space-y-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-text-muted uppercase tracking-widest px-1">Name</label>
+                      <input 
+                        className="w-full h-12 px-4 bg-background-secondary border border-border rounded-xl text-sm font-bold outline-none focus:border-accent-primary transition-all placeholder:font-normal" 
+                        placeholder={modal.type === 'addFolder' ? "e.g. University" : "e.g. Physics"}
+                        value={formData.name}
+                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                        autoFocus
+                        required
+                      />
+                    </div>
 
-      {/* Modals */}
-      {modal?.type === 'addFolder' && (
-        <FolderModal onSave={(data) => { onAddFolder(data); setModal(null); }} onClose={() => setModal(null)} />
-      )}
-      {modal?.type === 'editFolder' && (
-        <FolderModal initial={modal.data} onSave={(data) => { onEditFolder(modal.data.id, data); setModal(null); }} onClose={() => setModal(null)} />
-      )}
-      {modal?.type === 'addSubject' && (
-        <SubjectModal folders={folders}
-          initial={modal.data?.folderId ? { folderId: modal.data.folderId } : null}
-          onSave={(data) => { onAddSubject(data); setModal(null); }} onClose={() => setModal(null)} />
-      )}
-      {modal?.type === 'editSubject' && (
-        <SubjectModal folders={folders} initial={modal.data}
-          onSave={(data) => { onEditSubject(modal.data.id, data); setModal(null); }} onClose={() => setModal(null)} />
-      )}
+                    {modal.type === 'addFolder' ? (
+                       <div className="space-y-2">
+                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest px-1">Symbol</label>
+                        <div className="grid grid-cols-5 gap-2">
+                           {FOLDER_EMOJIS.map(emoji => (
+                             <button
+                               key={emoji}
+                               type="button"
+                               onClick={() => setFormData({ ...formData, emoji })}
+                               className={cn(
+                                 "h-10 w-10 flex items-center justify-center text-xl rounded-xl border transition-all",
+                                 formData.emoji === emoji ? "bg-accent-primary text-white border-accent-primary" : "bg-background-secondary border-border"
+                               )}
+                             >{emoji}</button>
+                           ))}
+                        </div>
+                       </div>
+                    ) : (
+                      <>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-text-muted uppercase tracking-widest px-1">Location</label>
+                          <select 
+                            className="w-full h-12 px-4 bg-background-secondary border border-border rounded-xl text-sm font-bold appearance-none outline-none focus:border-accent-primary"
+                            value={formData.folderId}
+                            onChange={e => setFormData({ ...formData, folderId: e.target.value })}
+                          >
+                            <option value="">Uncategorized</option>
+                            {folders.map(f => <option key={f.id} value={f.id}>{f.emoji} {f.name}</option>)}
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-text-muted uppercase tracking-widest px-1">Visual Icon</label>
+                          <div className="grid grid-cols-5 gap-2">
+                            {ICON_OPTIONS.map(name => {
+                              const IconComp = Icons[name];
+                              return (
+                                <button
+                                  key={name}
+                                  type="button"
+                                  onClick={() => setFormData({ ...formData, iconName: name })}
+                                  className={cn(
+                                    "h-10 w-10 flex items-center justify-center rounded-xl border transition-all",
+                                    formData.iconName === name ? "bg-accent-primary text-white border-accent-primary" : "bg-background-secondary border-border text-text-muted"
+                                  )}
+                                ><IconComp size={18} /></button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </>
+                    )}
 
-      {/* Delete confirm */}
-      {deleteConfirm && (
-        <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
-          <div className="modal-panel glass-panel delete-confirm" onClick={e => e.stopPropagation()}>
-            <div className="dc-icon">🗑</div>
-            <h3 className="dc-title">Delete {deleteConfirm.type === 'folder' ? 'Folder' : 'Subject'}?</h3>
-            <p className="dc-desc">
-              {deleteConfirm.type === 'folder'
-                ? `"${deleteConfirm.name}" will be deleted. All subjects inside will move to Uncategorized.`
-                : `"${deleteConfirm.name}" and all its topics will be permanently deleted.`}
-            </p>
-            <div className="dc-btns">
-              <button className="pm-cancel-btn" onClick={() => setDeleteConfirm(null)}>Cancel</button>
-              <button className="dc-confirm-btn" onClick={() => {
-                if (deleteConfirm.type === 'folder') onDeleteFolder(deleteConfirm.id);
-                else onDeleteSubject(deleteConfirm.id);
-                setDeleteConfirm(null);
-              }}>Delete</button>
-            </div>
+                    <div className="pt-4 flex gap-3">
+                      <button type="button" onClick={() => setModal(null)} className="flex-1 h-12 rounded-xl text-sm font-bold text-text-muted hover:bg-background-tertiary transition-all">Cancel</button>
+                      <button type="submit" className="flex-1 h-12 rounded-xl bg-accent-primary text-white font-bold shadow-lg shadow-accent-primary/25 hover:opacity-90 active:scale-95 transition-all">Confirm</button>
+                    </div>
+                  </form>
+               </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </>
-  );
-}
-
-function SubjectItem({ subject, isActive, onClick, onContextMenu }) {
-  return (
-    <div
-      className={`subject-item ${isActive ? 'active' : ''}`}
-      onClick={onClick}
-      onContextMenu={onContextMenu}
-    >
-      <div className="subject-icon"
-        style={{ backgroundColor: `${subject.color}15`, color: subject.color, borderColor: `${subject.color}30` }}>
-        {(() => { const I = Icons[subject.iconName] || Icons.Book; return <I size={15} />; })()}
-      </div>
-      <span className="subject-name">{subject.name}</span>
-      {isActive && <div className="active-indicator" style={{ backgroundColor: subject.color }} />}
-    </div>
   );
 }
 

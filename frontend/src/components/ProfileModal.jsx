@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
-import './ProfileModal.css';
+import { X, User, BookOpen, Settings, Info, Check, LogOut, Shield, Zap, Globe } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '../utils/cn';
 
 const AVATAR_OPTIONS = ['🎓', '🧑‍💻', '📚', '🦊', '🐼', '🚀', '🎯', '⚡'];
-const TABS = ['Account', 'Study', 'Preferences', 'About'];
 
-function ProfileModal({ profile, onSave, onClose }) {
-  const [activeTab, setActiveTab] = useState('Account');
+const TABS = [
+  { id: 'Account', icon: User, label: 'Account' },
+  { id: 'Study', icon: BookOpen, label: 'Study' },
+  { id: 'Preferences', icon: Settings, label: 'Preferences' },
+  { id: 'About', icon: Info, label: 'About' }
+];
+
+function ProfileModal({ profile, onSave, onClose, initialTab = 'Account' }) {
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [form, setForm] = useState({ ...profile });
   const [saved, setSaved] = useState(false);
 
@@ -19,195 +26,228 @@ function ProfileModal({ profile, onSave, onClose }) {
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="profile-modal glass-panel" onClick={e => e.stopPropagation()}>
-        
-        {/* Header */}
-        <div className="pm-header">
-          <div className="pm-header-left">
-            <span className="pm-avatar-display">{form.avatar}</span>
-            <div>
-              <h2 className="pm-title">{form.name || 'Your Profile'}</h2>
-              <p className="pm-subtitle">{form.email}</p>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="relative w-full max-w-2xl bg-background-primary rounded-4xl border border-border shadow-premium overflow-hidden flex flex-col md:flex-row h-full max-h-[600px]"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Sidebar Tabs */}
+        <div className="w-full md:w-64 bg-background-secondary/50 border-r border-border p-6 flex flex-col">
+          <div className="flex items-center gap-4 mb-10">
+            <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-accent-primary to-accent-secondary flex items-center justify-center text-3xl shadow-lg shadow-accent-primary/20">
+              {form.avatar}
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-lg font-bold text-text-primary truncate">{form.name || 'Your Profile'}</h2>
+              <p className="text-xs text-text-muted truncate">{form.email}</p>
             </div>
           </div>
-          <button className="icon-btn-small" onClick={onClose}><X size={16} /></button>
-        </div>
 
-        {/* Tabs */}
-        <div className="pm-tabs">
-          {TABS.map(tab => (
-            <button
-              key={tab}
-              className={`pm-tab ${activeTab === tab ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab)}
-            >{tab}</button>
-          ))}
-        </div>
+          <nav className="space-y-1 flex-1">
+            {TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all group",
+                  activeTab === tab.id 
+                    ? "bg-accent-primary text-white shadow-lg shadow-accent-primary/25" 
+                    : "text-text-muted hover:bg-background-tertiary hover:text-text-primary"
+                )}
+              >
+                <tab.icon size={18} className={cn("shrink-0", activeTab === tab.id ? "" : "group-hover:text-accent-primary")} />
+                {tab.label}
+              </button>
+            ))}
+          </nav>
 
-        {/* Tab Content */}
-        <div className="pm-body">
-
-          {activeTab === 'Account' && (
-            <div className="pm-section">
-              <label className="pm-label">Avatar</label>
-              <div className="avatar-picker">
-                {AVATAR_OPTIONS.map(a => (
-                  <button
-                    key={a}
-                    className={`avatar-opt ${form.avatar === a ? 'selected' : ''}`}
-                    onClick={() => update('avatar', a)}
-                  >{a}</button>
-                ))}
-              </div>
-
-              <label className="pm-label">Display Name</label>
-              <input className="pm-input" value={form.name} onChange={e => update('name', e.target.value)} placeholder="Your name" />
-
-              <label className="pm-label">Email</label>
-              <input className="pm-input" value={form.email} onChange={e => update('email', e.target.value)} placeholder="your@email.com" type="email" />
-
-              <label className="pm-label">Timezone</label>
-              <select className="pm-input" value={form.timezone} onChange={e => update('timezone', e.target.value)}>
-                <option>Asia/Kolkata</option>
-                <option>America/New_York</option>
-                <option>Europe/London</option>
-                <option>Asia/Tokyo</option>
-                <option>Australia/Sydney</option>
-              </select>
-
-              <label className="pm-label">Language</label>
-              <select className="pm-input" value={form.language} onChange={e => update('language', e.target.value)}>
-                <option>English</option>
-                <option>Hindi</option>
-                <option>Spanish</option>
-                <option>French</option>
-              </select>
-            </div>
-          )}
-
-          {activeTab === 'Study' && (
-            <div className="pm-section">
-              <label className="pm-label">Daily Study Goal</label>
-              <div className="pm-slider-row">
-                <input type="range" min={15} max={480} step={15} value={form.studyGoal}
-                  onChange={e => update('studyGoal', Number(e.target.value))} className="pm-slider" />
-                <span className="pm-slider-val">{form.studyGoal >= 60 ? `${(form.studyGoal/60).toFixed(1)}h` : `${form.studyGoal}m`}</span>
-              </div>
-
-              <label className="pm-label">Weekly Study Days Target</label>
-              <div className="pm-slider-row">
-                <input type="range" min={1} max={7} step={1} value={form.weeklyTarget}
-                  onChange={e => update('weeklyTarget', Number(e.target.value))} className="pm-slider" />
-                <span className="pm-slider-val">{form.weeklyTarget} days/wk</span>
-              </div>
-
-              <div className="pm-stat-row">
-                <div className="pm-stat-card">
-                  <span className="pm-stat-icon">🔥</span>
-                  <span className="pm-stat-label">Current Streak</span>
-                  <span className="pm-stat-val">5 days</span>
-                </div>
-                <div className="pm-stat-card">
-                  <span className="pm-stat-icon">⏱</span>
-                  <span className="pm-stat-label">Total Hours</span>
-                  <span className="pm-stat-val">2.8h</span>
-                </div>
-                <div className="pm-stat-card">
-                  <span className="pm-stat-icon">✅</span>
-                  <span className="pm-stat-label">Completed</span>
-                  <span className="pm-stat-val">1 topic</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'Preferences' && (
-            <div className="pm-section">
-              <label className="pm-label">Theme</label>
-              <div className="pm-toggle-group">
-                {['dark', 'light'].map(t => (
-                  <button key={t} className={`pm-toggle-btn ${form.theme === t ? 'active' : ''}`}
-                    onClick={() => update('theme', t)}>
-                    {t === 'dark' ? '🌙 Dark' : '☀️ Light'}
-                  </button>
-                ))}
-              </div>
-
-              <div className="pm-switch-row">
-                <div>
-                  <p className="pm-switch-label">Push Notifications</p>
-                  <p className="pm-switch-sub">Get alerts for deadlines & streaks</p>
-                </div>
-                <button className={`pm-switch ${form.notifications ? 'on' : ''}`}
-                  onClick={() => update('notifications', !form.notifications)}>
-                  <div className="pm-switch-thumb" />
-                </button>
-              </div>
-
-              <div className="pm-switch-row">
-                <div>
-                  <p className="pm-switch-label">Sound Effects</p>
-                  <p className="pm-switch-sub">Play sounds on actions</p>
-                </div>
-                <button className={`pm-switch ${form.soundEffects ? 'on' : ''}`}
-                  onClick={() => update('soundEffects', !form.soundEffects)}>
-                  <div className="pm-switch-thumb" />
-                </button>
-              </div>
-
-              <div className="pm-switch-row">
-                <div>
-                  <p className="pm-switch-label">Compact Mode</p>
-                  <p className="pm-switch-sub">Denser topic list layout</p>
-                </div>
-                <button className={`pm-switch ${form.compactMode ? 'on' : ''}`}
-                  onClick={() => update('compactMode', !form.compactMode)}>
-                  <div className="pm-switch-thumb" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'About' && (
-            <div className="pm-section pm-about">
-              <div className="brand-icon-wrapper pm-app-logo-custom" style={{ margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
-                📖
-              </div>
-              <h3 className="pm-app-name" style={{ fontSize: '1.6rem', marginBottom: '8px' }}>StudyTrack</h3>
-              <span className="priority-badge" style={{ color: 'var(--accent-secondary)', borderColor: 'var(--accent-secondary)', marginBottom: '16px', display: 'inline-block' }}>v2.0 Power Edition</span>
-              
-              <div className="pm-app-desc" style={{ maxWidth: '380px', margin: '0 auto 24px', color: 'var(--text-primary)', fontSize: '0.95rem' }}>
-                StudyTrack is your ultimate academic companion. We combine gorgeous, distraction-free aesthetics with powerful productivity metrics so you can achieve your learning goals effortlessly.
-                <br/><br/>
-                <strong style={{ color: 'var(--accent-primary)' }}>Features:</strong>
-                <ul style={{ textAlign: 'left', marginTop: '12px', paddingLeft: '20px', color: 'var(--text-secondary)' }}>
-                  <li>Intuitive Folder & Subject Management</li>
-                  <li>Real-time Progress Tracking & Study Logging</li>
-                  <li>Dynamic Light/Dark Themes across platforms</li>
-                  <li>In-line Topic Editing & Deadline Alerts</li>
-                  <li>In-line Notes for each topic</li>
-                </ul>
-              </div>
-
-              <div className="pm-links" style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                <button className="pm-link-btn">😸 GitHub</button>
-                <button className="pm-link-btn">☕ Buy me a coffee</button>
-                <button className="pm-link-btn">💖 Sponsor</button>
-              </div>
-              <p className="pm-made-with" style={{ marginTop: '16px', color: 'var(--text-muted)' }}>Designed & Engineered with ❤️</p>
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="pm-footer">
-          <button className="pm-cancel-btn" onClick={onClose}>Cancel</button>
-          <button className={`pm-save-btn ${saved ? 'saved' : ''}`} onClick={handleSave}>
-            {saved ? '✓ Saved!' : 'Save Changes'}
+          <button className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-colors mt-auto">
+             <LogOut size={18} /> Sign Out
           </button>
         </div>
-      </div>
+
+        {/* Content Area */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="p-4 md:p-8 flex-1 overflow-y-auto">
+             <AnimatePresence mode="wait">
+               <motion.div
+                 key={activeTab}
+                 initial={{ opacity: 0, x: 10 }}
+                 animate={{ opacity: 1, x: 0 }}
+                 exit={{ opacity: 0, x: -10 }}
+                 transition={{ duration: 0.2 }}
+                 className="space-y-8"
+               >
+                 {activeTab === 'Account' && (
+                   <div className="space-y-6">
+                     <section>
+                       <label className="text-xs font-bold text-text-muted uppercase tracking-widest mb-4 block">Choose Identity</label>
+                       <div className="grid grid-cols-4 sm:grid-cols-8 gap-3">
+                         {AVATAR_OPTIONS.map(a => (
+                           <button
+                             key={a}
+                             onClick={() => update('avatar', a)}
+                             className={cn(
+                               "h-10 w-10 flex items-center justify-center text-xl rounded-xl border-2 transition-all",
+                               form.avatar === a 
+                                 ? "border-accent-primary bg-accent-primary/5 translate-y--1" 
+                                 : "border-transparent hover:border-border-color bg-background-tertiary"
+                             )}
+                           >{a}</button>
+                         ))}
+                       </div>
+                     </section>
+
+                     <div className="space-y-4">
+                       <div className="space-y-2">
+                         <label className="text-xs font-bold text-text-muted uppercase tracking-widest block pl-1">Display Name</label>
+                         <input 
+                           className="w-full h-12 px-4 bg-background-secondary border border-border rounded-xl text-sm outline-none focus:border-accent-primary transition-colors" 
+                           value={form.name} 
+                           onChange={e => update('name', e.target.value)} 
+                           placeholder="Enter your name" 
+                         />
+                       </div>
+                       <div className="space-y-2">
+                         <label className="text-xs font-bold text-text-muted uppercase tracking-widest block pl-1">Email Address</label>
+                         <input 
+                           className="w-full h-12 px-4 bg-background-secondary border border-border rounded-xl text-sm outline-none focus:border-accent-primary transition-colors italic opacity-70" 
+                           value={form.email} 
+                           disabled
+                           type="email" 
+                         />
+                       </div>
+                     </div>
+                   </div>
+                 )}
+
+                 {activeTab === 'Study' && (
+                   <div className="space-y-8">
+                     <div className="space-y-4 pl-1">
+                       <div className="flex justify-between items-end">
+                         <label className="text-xs font-bold text-text-muted uppercase tracking-widest block">Daily Deep Work Goal</label>
+                         <span className="text-sm font-bold text-accent-primary">{form.studyGoal >= 60 ? `${(form.studyGoal/60).toFixed(1)}h` : `${form.studyGoal}m`}</span>
+                       </div>
+                       <input 
+                         type="range" min={15} max={480} step={15} value={form.studyGoal}
+                         onChange={e => update('studyGoal', Number(e.target.value))} 
+                         className="w-full accent-accent-primary cursor-pointer" 
+                       />
+                     </div>
+
+                     <div className="grid grid-cols-3 gap-4">
+                        {[
+                          { label: 'Streak', value: '5 days', icon: '🔥', color: 'orange' },
+                          { label: 'Studied', value: '2.8h', icon: '⏱', color: 'indigo' },
+                          { label: 'Milestones', value: '1', icon: '✅', color: 'emerald' },
+                        ].map((stat, i) => (
+                          <div key={i} className="p-4 rounded-2xl bg-background-secondary border border-border text-center">
+                            <span className="text-2xl mb-1 block">{stat.icon}</span>
+                            <p className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">{stat.label}</p>
+                            <p className="text-sm font-bold text-text-primary">{stat.value}</p>
+                          </div>
+                        ))}
+                     </div>
+                   </div>
+                 )}
+
+                 {activeTab === 'Preferences' && (
+                   <div className="space-y-6">
+                     <section>
+                        <label className="text-xs font-bold text-text-muted uppercase tracking-widest mb-3 block">Theme Preference</label>
+                        <div className="grid grid-cols-2 gap-3">
+                          {['dark', 'light'].map(t => (
+                            <button
+                              key={t}
+                              onClick={() => update('theme', t)}
+                              className={cn(
+                                "flex items-center justify-center gap-2 h-12 rounded-xl border text-sm font-bold transition-all",
+                                form.theme === t 
+                                  ? "bg-accent-primary text-white border-accent-primary shadow-md" 
+                                  : "bg-background-tertiary text-text-secondary border-transparent hover:border-border-color"
+                              )}
+                            >
+                              {t === 'dark' ? '🌙 Night' : '☀️ Day'}
+                            </button>
+                          ))}
+                        </div>
+                     </section>
+
+                     <div className="space-y-1">
+                        {[
+                          { id: 'notifications', title: 'Smart Alerts', desc: 'Deadlines & streak reminders', icon: Shield },
+                          { id: 'soundEffects', title: 'Haptic Feedback', desc: 'Subtle sound cues on actions', icon: Zap },
+                        ].map((pref) => (
+                          <div key={pref.id} className="flex items-center justify-between p-3 hover:bg-background-secondary rounded-xl transition-colors">
+                            <div className="flex items-center gap-3">
+                               <div className="h-10 w-10 rounded-lg bg-background-tertiary flex items-center justify-center text-accent-primary">
+                                  <pref.icon size={20} />
+                               </div>
+                               <div>
+                                  <p className="text-sm font-bold text-text-primary">{pref.title}</p>
+                                  <p className="text-xs text-text-muted">{pref.desc}</p>
+                               </div>
+                            </div>
+                            <button 
+                              className={cn(
+                                "relative w-11 h-6 rounded-full transition-colors outline-none",
+                                form[pref.id] ? "bg-accent-primary" : "bg-border-color"
+                              )}
+                              onClick={() => update(pref.id, !form[pref.id])}
+                            >
+                              <div className={cn(
+                                "absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform shadow-sm",
+                                form[pref.id] && "translate-x-5"
+                              )} />
+                            </button>
+                          </div>
+                        ))}
+                     </div>
+                   </div>
+                 )}
+
+                 {activeTab === 'About' && (
+                   <div className="text-center py-4">
+                      <div className="h-20 w-20 rounded-3xl bg-gradient-to-tr from-accent-primary to-accent-secondary text-white flex items-center justify-center text-3xl shadow-xl mx-auto mb-6">
+                        📖
+                      </div>
+                      <h3 className="text-2xl font-black text-text-primary mb-2">StudyTrack.</h3>
+                      <p className="text-sm text-text-muted max-w-sm mx-auto mb-8">Professional learning commander for elite students and knowledge workers.</p>
+                      
+                      <div className="flex justify-center gap-4">
+                        <button className="flex items-center gap-2 px-4 py-2 bg-background-tertiary rounded-xl text-xs font-bold hover:bg-border-color transition-colors"><Globe size={14} /> Website</button>
+                        <button className="flex items-center gap-2 px-4 py-2 bg-background-tertiary rounded-xl text-xs font-bold hover:bg-border-color transition-colors">⭐️ Support</button>
+                      </div>
+                      <p className="text-[10px] text-text-muted mt-10 uppercase font-black tracking-widest">Built for Excellence • v3.0</p>
+                   </div>
+                 )}
+               </motion.div>
+             </AnimatePresence>
+          </div>
+
+          <div className="p-6 border-t border-border flex items-center justify-end gap-3 bg-background-secondary/30">
+            <button className="px-5 py-2.5 rounded-xl text-sm font-bold text-text-muted hover:text-text-primary transition-colors" onClick={onClose}>
+              Discard
+            </button>
+            <button 
+              onClick={handleSave}
+              className={cn(
+                "flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all",
+                saved ? "bg-success" : "bg-accent-primary shadow-lg shadow-accent-primary/25 hover:opacity-90 active:scale-95"
+              )}
+            >
+              {saved ? <Check size={18} /> : 'Save Changes'}
+            </button>
+          </div>
+        </div>
+
+        <button className="absolute top-4 right-4 p-2 text-text-muted hover:text-text-primary transition-colors" onClick={onClose}>
+          <X size={20} />
+        </button>
+      </motion.div>
     </div>
   );
 }

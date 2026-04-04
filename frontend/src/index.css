@@ -1,64 +1,52 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  /* Dynamic, Modern Dark Theme Tokens */
-  --bg-primary: #0f111a;
-  --bg-gradient: radial-gradient(circle at 50% -20%, #2a1b41 0%, var(--bg-primary) 70%);
-  --bg-secondary: #161825;
-  --bg-tertiary: #1f2233;
-  --bg-hover: #2b2e42;
-  --bg-glass: rgba(22, 24, 37, 0.75);
-  --bg-subtle: rgba(255, 255, 255, 0.05);
-  --bg-subtle-hover: rgba(255, 255, 255, 0.1);
+  /* Premium SaaS Light Palette (High Contrast Differentiation) */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f4f7fa;   /* Slightly bluer gray for contrast */
+  --bg-tertiary: #e9eff5;
+  --bg-glass: rgba(255, 255, 255, 0.7);
 
-  --text-primary: #f8f9fa;
-  --text-secondary: #adb5bd;
-  --text-muted: #6c757d;
-  --text-invert: #0f111a;
+  --text-primary: #020617;   /* Slate 950 */
+  --text-secondary: #334155; /* Slate 700 */
+  --text-muted: #64748b;    /* Slate 500 */
 
-  --accent-primary: #7c3aed; /* Deep Violet */
-  --accent-secondary: #ec4899; /* Vibrant Pink */
-  --accent-glow: rgba(124, 58, 237, 0.4);
+  --accent-primary: #4f46e5;  /* Indigo 600 - Stronger */
+  --accent-secondary: #c026d3; /* Fuchsia 600 - More punchy */
+  --accent-highlight: #10b981; /* Emerald 500 - For specific growth elements */
+  --accent-glow: rgba(79, 70, 229, 0.2);
 
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
+  --border-color: #e2e8f0;    /* Slate 200 */
+  --border-light: #f1f5f9;    /* Slate 100 */
 
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-light: rgba(255, 255, 255, 0.12);
-  --border-radius-sm: 8px;
-  --border-radius-md: 12px;
-  --border-radius-lg: 20px;
+  /* Semantic Differentiation */
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
 
-  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 25px var(--accent-glow);
-
-  --transition-fast: 0.15s ease;
   --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-[data-theme='light'] {
-  --bg-primary: #f4f6fb;
-  --bg-gradient: radial-gradient(circle at 50% -20%, #fdf2f8 0%, #ede9fe 40%, var(--bg-primary) 80%);
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #f1f5f9;
-  --bg-hover: #e2e8f0;
-  --bg-glass: rgba(255, 255, 255, 0.85);
-  --bg-subtle: rgba(0, 0, 0, 0.04);
-  --bg-subtle-hover: rgba(0, 0, 0, 0.08);
+.dark {
+  /* Premium SaaS Dark Palette (Deep Obsidian & Ultraviolet) */
+  --bg-primary: #020617;      /* Slate 950 */
+  --bg-secondary: #0a1128;    /* Deep Midnight Blue for differentiation */
+  --bg-tertiary: #16223d;     /* Lighter navy for cards */
+  --bg-glass: rgba(2, 6, 23, 0.75);
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
-  --text-invert: #ffffff;
+  --text-primary: #f8fafc;    /* Slate 50 */
+  --text-secondary: #94a3b8;  /* Slate 400 */
+  --text-muted: #475569;     /* Slate 600 */
 
-  --border-color: rgba(0, 0, 0, 0.08);
-  --border-light: rgba(0, 0, 0, 0.15);
-  
-  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.12);
-  --shadow-glow: 0 4px 30px rgba(124, 58, 237, 0.15);
+  --accent-primary: #818cf8;  /* Indigo 400 */
+  --accent-secondary: #f472b6; /* Pink 400 - Contrast with Indigo */
+  --accent-highlight: #34d399; /* Emerald 400 */
+
+  --border-color: #1e293b;    /* Slate 800 */
+  --border-light: #0f172a;    /* Slate 900 */
 }
 
 * {

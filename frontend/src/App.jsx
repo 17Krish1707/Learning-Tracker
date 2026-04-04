@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import { Layers, Shield, Zap, Globe } from 'lucide-react';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import ProfileModal from './components/ProfileModal';
+import Statistics from './components/Statistics';
+import History from './components/History';
 import { useAuth } from './context/AuthContext';
 import GoogleSignInButton from './components/GoogleSignInButton';
 
@@ -34,6 +37,7 @@ function App() {
   const [subjects, setSubjects] = useState(initialSubjects);
   const [topics, setTopics] = useState(initialTopics);
   const [activeSubjectId, setActiveSubjectId] = useState(initialSubjects[0].id);
+  const [activeView, setActiveView] = useState('dashboard');
   const [streak, setStreak] = useState(5);
   const [profile, setProfile] = useState(initialProfile);
   const [showProfile, setShowProfile] = useState(false);
@@ -49,6 +53,11 @@ function App() {
 
   React.useEffect(() => {
     document.documentElement.setAttribute('data-theme', profile.theme);
+    if (profile.theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }, [profile.theme]);
 
   const addNotification = (message, type = 'info') => {
@@ -67,7 +76,6 @@ function App() {
     setFolders(prev => prev.map(f => f.id === folderId ? { ...f, ...updates } : f));
   };
   const handleDeleteFolder = (folderId) => {
-    // Move subjects in this folder to uncategorized
     setSubjects(prev => prev.map(s => s.folderId === folderId ? { ...s, folderId: null } : s));
     setFolders(prev => prev.filter(f => f.id !== folderId));
     addNotification('🗑 Folder deleted, subjects moved to Uncategorized', 'info');
@@ -132,30 +140,62 @@ function App() {
 
   if (!user) {
     return (
-      <div className="app-container">
-        <Header streak={0} profile={{ avatar:'🎓', name:'Guest' }} notifications={[]} onMarkAllRead={()=>{}} onOpenProfile={()=>{}} />
-        <div className="landing-gate">
-          <div className="gate-card glass-panel">
-            <span style={{ fontSize:'3rem' }}>📖</span>
-            <h1>StudyTrack</h1>
-            <p>Sign in with Google to start tracking your learning journey.</p>
-            <GoogleSignInButton />
+      <div className="min-h-screen bg-background-primary flex flex-col">
+        <Header streak={0} profile={{ theme: profile.theme, avatar:'🎓', name:'Guest' }} notifications={[]} onMarkAllRead={()=>{}} onOpenProfile={()=>{}} onToggleTheme={handleToggleTheme} />
+        <main className="flex-1 flex items-center justify-center p-6 bg-gradient-to-b from-background-primary to-background-secondary">
+          <div className="w-full max-w-lg animate-fade-in">
+            <div className="text-center mb-12">
+               <div className="inline-flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-tr from-accent-primary to-accent-secondary text-white shadow-2xl shadow-accent-primary/20 mb-6 mx-auto group hover:scale-110 transition-transform cursor-default">
+                  <Layers size={40} />
+               </div>
+               <h1 className="text-5xl font-extrabold tracking-tight text-text-primary mb-4">StudyTrack.</h1>
+               <p className="text-lg text-text-secondary">Elevate your learning experience with professional tracking and insights.</p>
+            </div>
+            
+            <div className="bg-background-primary rounded-[32px] border border-border-color shadow-premium p-10 text-center space-y-8">
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-text-primary">Ready to begin?</h2>
+                <p className="text-sm text-text-muted leading-relaxed">Join thousands of students who are achieving their goals with our state-of-the-art tools.</p>
+              </div>
+
+              <GoogleSignInButton />
+
+              <div className="pt-6 border-t border-border-color/50 flex items-center justify-center gap-8 opacity-60">
+                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-text-muted">
+                    <Shield size={14} /> Secure
+                 </div>
+                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-text-muted">
+                    <Zap size={14} /> Fast
+                 </div>
+                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-text-muted">
+                    <Globe size={14} /> Cloud
+                 </div>
+              </div>
+            </div>
           </div>
-        </div>
+        </main>
       </div>
     );
   }
 
   return (
-    
-    <div className="app-container">
-      <Header streak={streak} profile={profile} notifications={notifications} onMarkAllRead={markAllRead} onOpenProfile={() => setShowProfile(true)} onToggleTheme={handleToggleTheme} />
-      <div className="main-content">
+    <div className="flex flex-col h-screen bg-background-primary overflow-hidden">
+      <Header 
+        streak={streak} 
+        profile={profile} 
+        notifications={notifications} 
+        onMarkAllRead={markAllRead} 
+        onOpenProfile={(tab = 'Account') => { setShowProfile(tab); }} 
+        onToggleTheme={handleToggleTheme} 
+      />
+      <div className="flex flex-1 overflow-hidden">
         <Sidebar
           folders={folders}
           subjects={subjects}
           activeSubjectId={activeSubjectId}
-          setActiveSubjectId={setActiveSubjectId}
+          setActiveSubjectId={(id) => { setActiveSubjectId(id); setActiveView(id === null ? 'dashboard' : 'subject'); }}
+          activeView={activeView}
+          setActiveView={setActiveView}
           onAddFolder={handleAddFolder}
           onEditFolder={handleEditFolder}
           onDeleteFolder={handleDeleteFolder}
@@ -163,21 +203,26 @@ function App() {
           onEditSubject={handleEditSubject}
           onDeleteSubject={handleDeleteSubject}
           profile={profile}
-          onOpenProfile={() => setShowProfile(true)}
         />
-        <div className="content-area">
-          <Dashboard
-            subject={activeSubject}
-            topics={activeTopics}
-            onStatusChange={handleStatusChange}
-            onAddTopic={handleAddTopic}
-            onEditTopic={handleEditTopic}
-            onLogTime={handleLogTime}
-            onDeleteTopic={handleDeleteTopic}
-          />
-        </div>
+        <main className="flex-1 overflow-y-auto bg-background-secondary/30 p-6 lg:p-10">
+          {activeView === 'stats' ? (
+            <Statistics />
+          ) : activeView === 'history' ? (
+            <History />
+          ) : (
+            <Dashboard
+              subject={activeSubject}
+              topics={activeTopics}
+              onStatusChange={handleStatusChange}
+              onAddTopic={handleAddTopic}
+              onEditTopic={handleEditTopic}
+              onLogTime={handleLogTime}
+              onDeleteTopic={handleDeleteTopic}
+            />
+          )}
+        </main>
       </div>
-      {showProfile && <ProfileModal profile={profile} onSave={handleSaveProfile} onClose={() => setShowProfile(false)} />}
+      {showProfile && <ProfileModal profile={profile} onSave={handleSaveProfile} onClose={() => setShowProfile(false)} initialTab={typeof showProfile === 'string' ? showProfile : 'Account'} />}
     </div>
   );
 }
