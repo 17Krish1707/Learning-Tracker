@@ -15,11 +15,18 @@ const folderRoutes = require('./routes/folders');
 const app = express();
 
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://mystudytrackr.vercel.app',
-    'https://study-tracker-app-17krish1707s-projects.vercel.app',
-  ],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    // Allow localhost and any *.vercel.app URL
+    if (
+      origin.startsWith('http://localhost') ||
+      origin.endsWith('.vercel.app')
+    ) {
+      return callback(null, true);
+    }
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
 }));
 app.use(express.json());
