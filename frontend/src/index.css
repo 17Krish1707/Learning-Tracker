@@ -202,3 +202,28 @@ option {
   height: 64px !important;
   border-radius: var(--border-radius-lg) !important;
 }
+
+/* Modern Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}

@@ -43,11 +43,15 @@ function ProfileModal({ profile, onSave, onClose, onToggleTheme, initialTab = 'A
       >
         {/* Sidebar Tabs */}
         <div className="w-full md:w-64 bg-background-secondary/50 border-r border-border p-6 flex flex-col">
-          <div className="flex items-center gap-4 mb-10">
-            <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-accent-primary to-accent-secondary flex items-center justify-center text-3xl shadow-lg shadow-accent-primary/20">
-              {form.avatar}
+          <div className="flex items-center gap-4 mb-10 min-w-0">
+            <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-accent-primary/20 shrink-0 overflow-hidden", !form.avatar?.startsWith('http') && "bg-gradient-to-tr from-accent-primary to-accent-secondary")}>
+              {form.avatar?.startsWith('http') ? (
+                <img src={form.avatar} alt="" className="h-full w-full object-cover" />
+              ) : (
+                form.avatar
+              )}
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <h2 className="text-lg font-bold text-text-primary truncate">{form.name || 'Your Profile'}</h2>
               <p className="text-xs text-text-muted truncate">{form.email}</p>
             </div>
