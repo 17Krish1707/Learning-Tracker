@@ -1,9 +1,14 @@
 {
-  "name": "learning-tracker-root",
+  "name": "learning-tracker-monorepo",
   "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
-    "build": "npm install --prefix frontend && npm run build --prefix frontend && npm install --prefix backend",
+    "build": "npm run build --workspace=learning-tracker",
     "start": "node backend/server.js"
   }
 }
+
