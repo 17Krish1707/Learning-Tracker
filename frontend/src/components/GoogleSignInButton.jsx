@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 import './GoogleSignInButton.css';
-const API_BASE = import.meta.env.VITE_API_URL || '';
 
 export default function GoogleSignInButton() {
   const { login } = useAuth();
@@ -14,8 +13,7 @@ export default function GoogleSignInButton() {
       setLoading(true);
       setError(null);
       try {
-        // Send access token to your backend to verify + get JWT
-        const res = await fetch(`${API_BASE}/api/auth/google`, {
+        const res = await fetch('/api/auth/google', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ accessToken: tokenResponse.access_token }),
@@ -24,7 +22,6 @@ export default function GoogleSignInButton() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Google login failed');
 
-        // data = { token, user: { name, email, picture, ... } }
         login({ ...data.user, token: data.token });
       } catch (err) {
         setError(err.message || 'Login failed. Please try again.');

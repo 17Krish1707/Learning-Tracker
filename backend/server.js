@@ -1,9 +1,14 @@
+const path = require('path');
+const dotenv = require('dotenv');
+
+// Use __dirname so the path resolves correctly whether running locally
+// (node backend/server.js) or in Vercel serverless (via api/index.js).
+// If api/index.js already loaded dotenv, this is a safe no-op.
+dotenv.config({ path: path.join(__dirname, '.env') });
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const dotenv = require('dotenv');
-
-dotenv.config();
 
 const authRoutes = require('./routes/auth');
 const subjectRoutes = require('./routes/subjects');
@@ -14,13 +19,14 @@ const folderRoutes = require('./routes/folders');
 
 const app = express();
 
+// ─── CORS ────────────────────────────────────────────────────────────────────
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, curl, Postman)
+    // Allow requests with no origin (curl, Postman, mobile)
     if (!origin) return callback(null, true);
-    // Allow localhost and any *.vercel.app URL
     if (
       origin.startsWith('http://localhost') ||
+      origin.startsWith('http://127.0.0.1') ||
       origin.endsWith('.vercel.app')
     ) {
       return callback(null, true);
@@ -29,14 +35,20 @@ app.use(cors({
   },
   credentials: true,
 }));
+
 app.use(express.json());
 
-// Connect DB once per cold start (Vercel reuses connections)
+// ─── DB (lazy connect — safe for serverless cold-starts) ────────────────────
 let isConnected = false;
+
 const connectDB = async () => {
   if (isConnected) return;
+  if (!process.env.MONGO_URI) {
+    throw new Error('MONGO_URI environment variable is not set');
+  }
   await mongoose.connect(process.env.MONGO_URI);
   isConnected = true;
+  console.log('✅ MongoDB connected');
 };
 
 app.use(async (req, res, next) => {
@@ -44,41 +56,33 @@ app.use(async (req, res, next) => {
     await connectDB();
     next();
   } catch (err) {
+    console.error('DB connection error:', err.message);
     res.status(500).json({ success: false, message: 'Database connection failed' });
   }
 });
 
-// Routes mounting utility
-const mount = (routePath, router) => {
-  app.use(routePath, router);
-  // Also mount without /api prefix for Vercel environment compatibility
-  if (routePath.startsWith('/api/')) {
-    app.use(routePath.replace('/api', ''), router);
-  }
-};
-
-mount('/api/auth', authRoutes);
-mount('/api/subjects', subjectRoutes);
-mount('/api/topics', topicRoutes);
-mount('/api/sessions', sessionRoutes);
-mount('/api/stats', statsRoutes);
-mount('/api/folders', folderRoutes);
+// ─── Routes ──────────────────────────────────────────────────────────────────
+app.use('/api/auth',     authRoutes);
+app.use('/api/subjects', subjectRoutes);
+app.use('/api/topics',   topicRoutes);
+app.use('/api/sessions', sessionRoutes);
+app.use('/api/stats',    statsRoutes);
+app.use('/api/folders',  folderRoutes);
 
 // Health check
 app.get(['/api/health', '/health'], (req, res) => {
   res.json({ status: 'ok', message: 'Learning Tracker API is running' });
 });
 
-// Custom 404 handler for debugging routing issues
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: `API Route not found: ${req.method} ${req.originalUrl}`,
-    hint: "If you see this, the rewrite to api/index.js worked, but the Express router didn't find a match."
+    message: `Route not found: ${req.method} ${req.originalUrl}`,
   });
 });
 
-
+// Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.status || 500).json({
@@ -87,17 +91,17 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Export for Vercel
+// ─── Export for Vercel ───────────────────────────────────────────────────────
 module.exports = app;
 
-// Only run server locally
+// ─── Local dev server ────────────────────────────────────────────────────────
 if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 5000;
   mongoose
     .connect(process.env.MONGO_URI)
     .then(() => {
       console.log('✅ MongoDB connected');
-      app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+      app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
     })
     .catch((err) => {
       console.error('❌ MongoDB connection failed:', err.message);
