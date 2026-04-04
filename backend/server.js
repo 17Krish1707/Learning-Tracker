@@ -1,16 +1,13 @@
-import serverless from 'serverless-http';
 const path = require('path');
 const dotenv = require('dotenv');
 
-// Use __dirname so the path resolves correctly whether running locally
-// (node backend/server.js) or in Vercel serverless (via api/index.js).
-// If api/index.js already loaded dotenv, this is a safe no-op.
+// Load environment variables
 dotenv.config({ path: path.join(__dirname, '.env') });
 
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-
+// ... rest of your requires
 const authRoutes = require('./routes/auth');
 const subjectRoutes = require('./routes/subjects');
 const topicRoutes = require('./routes/topics');
@@ -92,8 +89,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ─── Export for Vercel (serverless) ─────────────────────────────────────────
-module.exports = serverless(app);
+module.exports = app;
 
 // ─── Local dev server ──────────────────────────────────────────────────────
 if (!process.env.VERCEL) {
