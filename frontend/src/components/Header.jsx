@@ -41,7 +41,7 @@ function Header({
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background-glass backdrop-blur-xl">
-      <div className="mx-auto flex h-20 max-w-full items-center justify-between px-8">
+      <div className="mx-auto flex h-20 max-w-full items-center justify-between px-4 lg:px-8">
         {/* Left Side: Brand & Search */}
         <div className="flex items-center gap-4 lg:gap-12">
           <button 
@@ -141,7 +141,7 @@ function Header({
              )}
           </div>
 
-          <div className="h-8 w-[1px] bg-border mx-2" />
+          <div className="h-8 w-[1px] bg-border mx-1 lg:mx-2 hidden sm:block" />
 
           {loading ? (
             <div className="h-11 w-11 rounded-2xl bg-background-tertiary animate-pulse" />
@@ -149,7 +149,7 @@ function Header({
             <div className="relative" ref={userMenuRef}>
               <button 
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-3 p-1.5 pr-4 rounded-2xl bg-background-tertiary/50 border border-border hover:bg-background-secondary transition-all group"
+                className="flex items-center gap-2 lg:gap-3 p-1 lg:p-1.5 lg:pr-4 rounded-2xl bg-background-tertiary/50 border border-border hover:bg-background-secondary transition-all group"
               >
                 <div className={cn("h-9 w-9 rounded-xl flex items-center justify-center text-white font-black text-sm overflow-hidden border-2 border-white dark:border-gray-900 shadow-md transition-transform group-hover:scale-105", !user.picture?.startsWith('http') && "bg-accent-primary text-lg")}>
                   {user.picture?.startsWith('http') ? (
@@ -158,11 +158,11 @@ function Header({
                     user.picture || user.name?.[0] || 'U'
                   )}
                 </div>
-                <div className="text-left hidden md:block">
+                <div className="text-left hidden lg:block">
                    <p className="text-xs font-black text-text-primary truncate max-w-[100px] uppercase tracking-tighter">{user.name}</p>
                    <p className="text-[9px] font-bold text-text-muted truncate max-w-[100px]">Elite Member</p>
                 </div>
-                <ChevronDown size={14} className={cn("text-text-muted transition-transform duration-300", showUserMenu && "rotate-180")} />
+                <ChevronDown size={14} className={cn("text-text-muted transition-transform duration-300 hidden sm:block", showUserMenu && "rotate-180")} />
               </button>
 
               <AnimatePresence>
