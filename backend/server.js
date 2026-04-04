@@ -1,3 +1,4 @@
+import serverless from 'serverless-http';
 const path = require('path');
 const dotenv = require('dotenv');
 
@@ -91,17 +92,19 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ─── Export for Vercel ───────────────────────────────────────────────────────
-module.exports = app;
+// ─── Export for Vercel (serverless) ─────────────────────────────────────────
+module.exports = serverless(app);
 
-// ─── Local dev server ────────────────────────────────────────────────────────
+// ─── Local dev server ──────────────────────────────────────────────────────
 if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 5000;
   mongoose
     .connect(process.env.MONGO_URI)
     .then(() => {
       console.log('✅ MongoDB connected');
-      app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+      app.listen(PORT, () =>
+        console.log(`🚀 Server running on http://localhost:${PORT}`)
+      );
     })
     .catch((err) => {
       console.error('❌ MongoDB connection failed:', err.message);
