@@ -6,13 +6,14 @@
 
 
   "functions": {
-    "api/index.js": {
+    "api/**/*.js": {
       "runtime": "nodejs20.x",
       "includeFiles": "backend/**"
     }
   },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index" },
+    { "source": "/api/(.*)", "destination": "/api/index.js" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
-}
+}
+

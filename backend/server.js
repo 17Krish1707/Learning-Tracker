@@ -48,16 +48,36 @@ app.use(async (req, res, next) => {
   }
 });
 
-app.use('/api/auth', authRoutes);
-app.use('/api/subjects', subjectRoutes);
-app.use('/api/topics', topicRoutes);
-app.use('/api/sessions', sessionRoutes);
-app.use('/api/stats', statsRoutes);
-app.use('/api/folders', folderRoutes);
+// Routes mounting utility
+const mount = (routePath, router) => {
+  app.use(routePath, router);
+  // Also mount without /api prefix for Vercel environment compatibility
+  if (routePath.startsWith('/api/')) {
+    app.use(routePath.replace('/api', ''), router);
+  }
+};
 
-app.get('/api/health', (req, res) => {
+mount('/api/auth', authRoutes);
+mount('/api/subjects', subjectRoutes);
+mount('/api/topics', topicRoutes);
+mount('/api/sessions', sessionRoutes);
+mount('/api/stats', statsRoutes);
+mount('/api/folders', folderRoutes);
+
+// Health check
+app.get(['/api/health', '/health'], (req, res) => {
   res.json({ status: 'ok', message: 'Learning Tracker API is running' });
 });
+
+// Custom 404 handler for debugging routing issues
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `API Route not found: ${req.method} ${req.originalUrl}`,
+    hint: "If you see this, the rewrite to api/index.js worked, but the Express router didn't find a match."
+  });
+});
+
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
