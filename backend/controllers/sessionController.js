@@ -111,5 +111,18 @@ const deleteSession = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+// GET /api/sessions — all sessions for logged-in user, populated
+const getAllSessions = async (req, res) => {
+  try {
+    const sessions = await StudySession.find({ userId: req.user._id })
+      .populate({ path: 'topicId', select: 'title subjectId', populate: { path: 'subjectId', select: 'name' } })
+      .sort({ date: -1 })
+      .limit(200);
+    res.json({ success: true, sessions });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+// Add to module.exports
 
-module.exports = { createSession, getSessionsByTopic, deleteSession };
+module.exports = { createSession, getSessionsByTopic, getAllSessions, deleteSession };
