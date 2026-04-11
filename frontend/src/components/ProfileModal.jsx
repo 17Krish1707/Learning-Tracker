@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   X, User, BookOpen, Settings, Info, Check, LogOut, 
-  Shield, Zap, Globe, Sun, Moon, Upload 
+  Shield, Zap, Globe, Sun, Moon, Upload, Layers, Target, Clock 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
@@ -14,7 +14,7 @@ const TABS = [
   { id: 'Account', icon: User, label: 'Account' },
   { id: 'Study', icon: BookOpen, label: 'Study' },
   { id: 'Preferences', icon: Settings, label: 'Preferences' },
-  { id: 'About', icon: Info, label: 'About' }
+  { id: 'Guides', icon: Info, label: 'Guides' }
 ];
 
 function ProfileModal({ profile, onSave, onClose, onToggleTheme, initialTab = 'Account' }) {
@@ -299,17 +299,56 @@ function ProfileModal({ profile, onSave, onClose, onToggleTheme, initialTab = 'A
 
                  {activeTab === 'About' && (
                    <div className="text-center py-4">
-                      <div className="h-20 w-20 rounded-3xl bg-gradient-to-tr from-accent-primary to-accent-secondary text-white flex items-center justify-center text-3xl shadow-xl mx-auto mb-6">
-                        📖
+                      <div className="h-20 w-20 rounded-3xl bg-gradient-to-tr from-accent-primary via-fuchsia-500 to-accent-highlight text-white flex items-center justify-center text-3xl shadow-xl mx-auto mb-6">
+                        🎓
                       </div>
                       <h3 className="text-2xl font-black text-text-primary mb-2">StudyTrack.</h3>
                       <p className="text-sm text-text-muted max-w-sm mx-auto mb-8">Professional learning commander for elite students and knowledge workers.</p>
                       
                       <div className="flex justify-center gap-4">
                         <button className="flex items-center gap-2 px-4 py-2 bg-background-tertiary rounded-xl text-xs font-bold hover:bg-border-color transition-colors"><Globe size={14} /> Website</button>
-                        <button className="flex items-center gap-2 px-4 py-2 bg-background-tertiary rounded-xl text-xs font-bold hover:bg-border-color transition-colors">⭐️ Support</button>
+                        <button onClick={() => setActiveTab('Guides')} className="flex items-center gap-2 px-4 py-2 bg-accent-primary/10 text-accent-primary rounded-xl text-xs font-bold hover:bg-accent-primary hover:text-white transition-all">☀️ Support & Guides</button>
                       </div>
                       <p className="text-[10px] text-text-muted mt-10 uppercase font-black tracking-widest">Built for Excellence • v3.0</p>
+                   </div>
+                 )}
+
+                 {activeTab === 'Guides' && (
+                   <div className="space-y-8 pb-10">
+                     <div className="space-y-4">
+                       <h3 className="text-xl font-black text-text-primary uppercase tracking-tight">Academic Protocol</h3>
+                       <div className="h-1 w-12 bg-accent-primary rounded-full" />
+                       <p className="text-[13px] text-text-muted font-medium leading-relaxed italic opacity-80">Master your learning journey with the ultimate strategic tracking suite.</p>
+                     </div>
+
+                     <div className="grid gap-4">
+                       {[
+                         { title: 'Subject Hierarchy', text: 'Organize your studies into Subjects and Topics. Each Subject acts as a central repository for your modules.', icon: Layers },
+                         { title: 'Progression Log', text: 'Track specific topics with precision. Mark them as Pending, In-Progress, or Complete to visualize your mastery.', icon: Zap },
+                         { title: 'Temporal Analysis', text: 'Log your study sessions to analyze your cognitive performance over time. View detailed history and daily streaks.', icon: Clock },
+                         { title: 'Strategic Planning', text: 'Set daily deep work goals and monitor your weekly progression targets in real-time.', icon: Target }
+                       ].map((guide, i) => (
+                         <div key={i} className="flex gap-4 p-5 rounded-2xl bg-background-secondary/40 border border-border/60 hover:border-accent-primary/40 transition-colors group">
+                           <div className="h-10 w-10 rounded-xl bg-background-tertiary flex items-center justify-center text-accent-primary group-hover:scale-110 transition-transform">
+                             <guide.icon size={20} />
+                           </div>
+                           <div className="flex-1">
+                             <h4 className="text-[13px] font-black text-text-primary uppercase tracking-wide mb-1">{guide.title}</h4>
+                             <p className="text-[12px] text-text-muted leading-relaxed font-medium opacity-70">{guide.text}</p>
+                           </div>
+                         </div>
+                       ))}
+                     </div>
+
+                     <div className="p-6 rounded-3xl bg-accent-blue/5 border border-accent-blue/20 flex items-center gap-6">
+                        <div className="h-14 w-14 rounded-2xl bg-accent-blue/10 flex items-center justify-center text-accent-blue">
+                          <Globe size={28} />
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-black text-accent-blue uppercase tracking-widest leading-none mb-1">Advanced Synchronization</p>
+                          <p className="text-[10px] text-text-muted font-bold opacity-60">All data is secured and synchronized across the global infrastructure in real-time.</p>
+                        </div>
+                     </div>
                    </div>
                  )}
                </motion.div>

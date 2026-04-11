@@ -104,69 +104,72 @@ function Sidebar({
       </AnimatePresence>
 
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-[70] w-72 bg-background-primary border-r border-border flex flex-col transition-transform duration-300 transform lg:translate-x-0 lg:static lg:flex lg:h-full",
+        "fixed inset-y-0 left-0 z-[70] w-80 bg-background-primary/40 backdrop-blur-3xl border-r border-border/60 flex flex-col transition-all duration-500 transform lg:translate-x-0 lg:static lg:flex lg:h-full shadow-premium",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        <div className="p-6 space-y-8 flex-1 overflow-y-auto">
-          <div className="flex items-center justify-between lg:hidden mb-6">
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-accent-primary">Menu</span>
-            <button onClick={onClose} className="p-2 rounded-xl bg-background-tertiary text-text-muted"><Icons.X size={20} /></button>
-          </div>
-
-          <div className="space-y-1">
-            <div className="px-3 text-[10px] font-black uppercase tracking-[0.3em] text-text-muted mb-4 opacity-40 italic">Main Menu</div>
-            <NavItem
-              icon={Icons.LayoutDashboard}
-              label="Dashboard"
-              active={activeView === 'dashboard'}
-              onClick={() => { setActiveSubjectId(null); setActiveView('dashboard'); onClose(); }}
-            />
-            <NavItem
-              icon={Icons.BarChart3}
-              label="Growth Stats"
-              active={activeView === 'stats'}
-              onClick={() => { setActiveView('stats'); onClose(); }}
-            />
-            <NavItem
-              icon={Icons.Clock}
-              label="Study History"
-              active={activeView === 'history'}
-              onClick={() => { setActiveView('history'); onClose(); }}
-            />
+        <div className="p-10 space-y-12 flex-1 overflow-y-auto custom-scrollbar">
+          <div className="flex items-center justify-between lg:hidden mb-12">
+            <span className="text-[11px] font-black uppercase tracking-[0.5em] text-accent-primary opacity-60">System Menu</span>
+            <button onClick={onClose} className="p-3 rounded-2xl bg-background-tertiary text-text-muted hover:text-text-primary transition-all shadow-soft"><Icons.X size={20} /></button>
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between px-3">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted opacity-40 italic">Library</h3>
-              <div className="flex gap-1">
-                <button onClick={() => handleOpenModal('addFolder')} className="p-1.5 rounded-lg text-text-muted hover:bg-background-tertiary hover:text-accent-primary transition-colors">
-                  <Icons.FolderPlus size={14} />
+            <div className="px-5 text-[10px] font-black uppercase tracking-[0.4em] text-text-muted mb-6 opacity-30 italic">Tactical Overview</div>
+            <div className="space-y-2">
+              <NavItem
+                icon={Icons.LayoutDashboard}
+                label="Core Status"
+                active={activeView === 'dashboard'}
+                onClick={() => { setActiveSubjectId(null); setActiveView('dashboard'); onClose(); }}
+              />
+              <NavItem
+                icon={Icons.BarChart3}
+                label="Growth Engine"
+                active={activeView === 'stats'}
+                onClick={() => { setActiveView('stats'); onClose(); }}
+              />
+              <NavItem
+                icon={Icons.Clock}
+                label="Temporal Log"
+                active={activeView === 'history'}
+                onClick={() => { setActiveView('history'); onClose(); }}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-8">
+            <div className="flex items-center justify-between px-5">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-text-muted opacity-30 italic">Intelligence Bank</h3>
+              <div className="flex gap-2">
+                <button onClick={() => handleOpenModal('addFolder')} className="h-8 w-8 rounded-xl flex items-center justify-center text-text-muted hover:bg-accent-primary/10 hover:text-accent-primary transition-all border border-transparent hover:border-accent-primary/20">
+                  <Icons.FolderPlus size={16} />
                 </button>
-                <button onClick={() => handleOpenModal('addSubject')} className="p-1.5 rounded-lg text-text-muted hover:bg-background-tertiary hover:text-accent-primary transition-colors">
-                  <Icons.Plus size={14} />
+                <button onClick={() => handleOpenModal('addSubject')} className="h-8 w-8 rounded-xl flex items-center justify-center text-text-muted hover:bg-accent-primary/10 hover:text-accent-primary transition-all border border-transparent hover:border-accent-primary/20">
+                  <Icons.Plus size={16} />
                 </button>
               </div>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-4">
               {folders.map(folder => {
                 const folderSubjects = subjectsByFolder(folder.id);
                 const isCollapsed = collapsedFolders[folder.id];
                 return (
-                  <div key={folder.id} className="space-y-1">
+                  <div key={folder.id} className="space-y-2">
                     <button
                       onClick={() => toggleFolder(folder.id)}
-                      onDragOver={(e) => e.preventDefault()}
-                      onDrop={(e) => handleDrop(e, folder.id)}
-                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold text-text-secondary hover:bg-background-tertiary transition-all group hover:scale-[1.02] active:scale-[0.98]"
+                      onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('bg-accent-primary/5'); }}
+                      onDragLeave={(e) => { e.currentTarget.classList.remove('bg-accent-primary/5'); }}
+                      onDrop={(e) => { handleDrop(e, folder.id); e.currentTarget.classList.remove('bg-accent-primary/5'); }}
+                      className="flex w-full items-center gap-4 rounded-[1.5rem] px-5 py-3 text-sm font-black text-text-secondary hover:bg-background-tertiary/60 transition-all group overflow-hidden border border-transparent hover:border-border/40"
                     >
-                      <Icons.ChevronDown size={14} className={cn("transition-transform duration-200 opacity-40 group-hover:opacity-100", isCollapsed && "-rotate-90")} />
-                      <span className="text-lg leading-none">{folder.emoji}</span>
-                      <span className="flex-1 text-left truncate tracking-tight">{folder.name}</span>
-                      <span className="text-[10px] font-black opacity-30 group-hover:opacity-100 px-2 py-0.5 rounded-md bg-background-tertiary">{folderSubjects.length}</span>
+                      <Icons.ChevronDown size={14} className={cn("transition-transform duration-500 text-accent-primary opacity-40 group-hover:opacity-100", isCollapsed && "-rotate-90")} />
+                      <span className="text-xl leading-none group-hover:scale-110 transition-transform">{folder.emoji}</span>
+                      <span className="flex-1 text-left truncate tracking-tight italic uppercase text-[11px] font-black">{folder.name}</span>
+                      <span className="text-[10px] font-black opacity-30 px-2.5 py-1 rounded-xl bg-background-tertiary border border-border/40 group-hover:opacity-100 transition-opacity">{folderSubjects.length}</span>
                     </button>
                     {!isCollapsed && (
-                      <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="pl-4 space-y-0.5 border-l-2 border-border/20 ml-5 my-1">
+                      <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="pl-6 space-y-1 border-l-2 border-border/20 ml-7 my-2">
                         {folderSubjects.map(subject => (
                           <NavItem
                             key={subject.id}
@@ -187,14 +190,14 @@ function Sidebar({
 
                 <div 
                   className={cn(
-                    "pt-4 space-y-1 transition-all rounded-2xl group/uncat",
-                    "hover:bg-accent-primary/5 border border-transparent hover:border-dashed hover:border-accent-primary/20"
+                    "pt-6 space-y-2 transition-all rounded-[2rem] group/uncat p-2",
+                    "hover:bg-accent-primary/[0.02] border border-transparent hover:border-dashed hover:border-accent-primary/10"
                   )}
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => handleDrop(e, null)}
                 >
-                  <div className="flex items-center justify-between px-3 py-2">
-                    <div className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] opacity-30 italic">Uncategorized</div>
+                  <div className="flex items-center justify-between px-4 py-2">
+                    <div className="text-[9px] font-black text-text-muted uppercase tracking-[0.3em] opacity-30 italic">Raw Entities</div>
                     <Icons.ArrowDownLeft size={10} className="text-accent-primary opacity-0 group-hover/uncat:opacity-100 transition-opacity" />
                   </div>
                   {uncategorized.map(subject => (
@@ -214,20 +217,26 @@ function Sidebar({
           </div>
         </div>
 
-        <div className="p-6">
-          <div className="rounded-3xl bg-gradient-to-br from-accent-primary/10 via-accent-secondary/5 to-transparent p-5 border border-accent-primary/10 relative overflow-hidden group">
-            <div className="absolute -right-4 -top-4 h-20 w-20 bg-accent-primary/10 rounded-full blur-2xl group-hover:scale-150 transition-transform" />
-            <p className="text-[10px] font-black text-accent-primary uppercase tracking-widest mb-3">Weekly Target</p>
-            <div className="flex items-end justify-between mb-2">
-              <span className="text-3xl font-black text-text-primary tracking-tighter">85<span className="text-lg opacity-40">%</span></span>
-              <span className="text-[11px] text-text-secondary font-bold mb-1 opacity-60">17/20h</span>
+        <div className="p-8 border-t border-border/40">
+          <div className="rounded-[2.5rem] bg-gradient-to-br from-accent-primary/10 via-accent-secondary/5 to-transparent p-8 border border-accent-primary/10 relative overflow-hidden group shadow-soft backdrop-blur-md">
+            <div className="absolute -right-8 -top-8 h-32 w-32 bg-accent-primary/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
+            <div className="flex items-center justify-between mb-4">
+               <p className="text-[11px] font-black text-accent-primary uppercase tracking-[0.3em]">Operational Target</p>
+               <Icons.Zap size={14} className="text-accent-primary animate-pulse" />
             </div>
-            <div className="h-1.5 w-full rounded-full bg-background-secondary border border-border/50 overflow-hidden">
+            <div className="flex items-end justify-between mb-4">
+              <span className="text-4xl font-black text-text-primary tracking-tighter">85<span className="text-xl opacity-30 ml-1">%</span></span>
+              <span className="text-[10px] text-text-muted font-bold mb-1 italic opacity-60">Calculated Projection</span>
+            </div>
+            <div className="h-2 w-full rounded-full bg-background-secondary/50 border border-white/5 overflow-hidden p-0.5">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: '85%' }}
-                className="h-full bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full"
-              />
+                transition={{ duration: 1.5, ease: "circOut" }}
+                className="h-full bg-gradient-to-r from-accent-primary to-accent-highlight rounded-full relative"
+              >
+                 <div className="absolute top-0 right-0 h-full w-4 bg-white/20 blur-sm" />
+              </motion.div>
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Layers, Shield, Zap, Globe } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -193,7 +194,8 @@ function App() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background-primary flex flex-col">
+      <div className="flex flex-col h-screen bg-background-primary overflow-hidden selection:bg-accent-primary selection:text-white relative">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(124,58,237,0.1),transparent_50%)]" />
         <Header
           streak={0}
           profile={{ theme: profile.theme, avatar: '🎓', name: 'Guest' }}
@@ -202,33 +204,38 @@ function App() {
           onOpenProfile={() => {}}
           onToggleTheme={handleToggleTheme}
         />
-        <main className="flex-1 flex items-center justify-center p-6">
-          <div className="w-full max-w-lg animate-fade-in">
-            <div className="text-center mb-12">
-              <div className="inline-flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-tr from-accent-primary to-accent-secondary text-white shadow-2xl shadow-accent-primary/20 mb-6 mx-auto">
-                <Layers size={40} />
+        <main className="flex-1 flex items-center justify-center p-6 relative z-10">
+          <div className="w-full max-w-xl animate-fade-in">
+            <div className="text-center mb-16">
+              <div className="inline-flex h-24 w-24 items-center justify-center rounded-[2.5rem] bg-gradient-to-tr from-accent-primary to-accent-highlight text-white shadow-premium mb-10 mx-auto group">
+                <Layers size={48} className="group-hover:scale-110 transition-transform duration-500" />
               </div>
-              <h1 className="text-5xl font-extrabold tracking-tight text-text-primary mb-4">StudyTrack.</h1>
-              <p className="text-lg text-text-secondary">Elevate your learning with professional tracking and insights.</p>
+              <h1 className="text-6xl font-black tracking-tighter text-text-primary mb-6 leading-[0.9]">Intelligence<br/>Tracking.</h1>
+              <p className="text-xl text-text-secondary font-medium tracking-tight opacity-70 leading-relaxed max-w-sm mx-auto italic">Professional temporal management and cognitive growth analysis.</p>
             </div>
 
-            <div className="bg-background-primary rounded-[32px] border border-border shadow-premium p-10 text-center space-y-8">
+            <div className="bg-background-primary/40 backdrop-blur-3xl rounded-[3rem] border border-border/60 shadow-premium p-12 text-center space-y-12">
               <div className="space-y-4">
-                <h2 className="text-2xl font-bold text-text-primary">Ready to begin?</h2>
-                <p className="text-sm text-text-muted leading-relaxed">
-                  Your subjects, topics, and study sessions are saved securely in the cloud.
+                <h2 className="text-2xl font-black text-text-primary uppercase tracking-tight italic leading-none">Authentication Required</h2>
+                <div className="h-px w-12 bg-accent-primary mx-auto opacity-40" />
+                <p className="text-[13px] text-text-muted font-bold tracking-wide opacity-60 px-6 leading-relaxed">
+                  Join the elite network to synchronize your academic and technical progression across the global infrastructure.
                 </p>
               </div>
-              <GoogleSignInButton />
-              <div className="pt-6 border-t border-border/50 flex items-center justify-center gap-8 opacity-60">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-text-muted">
-                  <Shield size={14} /> Secure
+              
+              <div className="flex justify-center transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300">
+                <GoogleSignInButton />
+              </div>
+
+              <div className="pt-10 border-t border-border/30 flex items-center justify-center gap-12 opacity-40">
+                <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-text-muted">
+                  <Shield size={16} className="text-accent-primary" /> Secure
                 </div>
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-text-muted">
-                  <Zap size={14} /> Fast
+                <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-text-muted">
+                  <Zap size={16} className="text-accent-primary" /> Rapid
                 </div>
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-text-muted">
-                  <Globe size={14} /> Cloud
+                <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-text-muted">
+                  <Globe size={16} className="text-accent-primary" /> Neural
                 </div>
               </div>
             </div>
@@ -239,7 +246,7 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background-primary overflow-hidden">
+    <div className="flex flex-col h-screen bg-background-primary overflow-hidden selection:bg-accent-primary selection:text-white font-sans tracking-tight">
       <Header
         streak={streak}
         profile={profile}
@@ -254,7 +261,7 @@ function App() {
         onMenuToggle={() => setIsSidebarOpen(true)}
       />
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
         <Sidebar
           folders={folders}
           subjects={subjects}
@@ -277,37 +284,57 @@ function App() {
           onClose={() => setIsSidebarOpen(false)}
         />
 
-        <main className="flex-1 overflow-y-auto bg-background-secondary/30 p-6 lg:p-10">
-          {dataLoading && (
-            <div className="flex items-center justify-center py-20">
-              <div className="flex flex-col items-center gap-3">
-                <div className="h-8 w-8 rounded-xl bg-accent-primary/20 animate-pulse" />
-                <p className="text-xs font-bold text-text-muted uppercase tracking-widest">Syncing…</p>
-              </div>
-            </div>
-          )}
-
-          {!dataLoading && (
-            <>
-              {activeView === 'stats' ? (
-                <Statistics />
-              ) : activeView === 'history' ? (
-                <History />
-              ) : (
-                <Dashboard
-                  subject={activeSubject}
-                  topics={activeTopics}
-                  allTopics={allTopics}
-                  profile={profile}
-                  onStatusChange={handleStatusChange}
-                  onAddTopic={handleAddTopic}
-                  onEditTopic={handleEditTopic}
-                  onLogTime={handleLogTime}
-                  onDeleteTopic={handleDeleteTopic}
-                />
-              )}
-            </>
-          )}
+        <main className="flex-1 overflow-y-auto bg-[radial-gradient(circle_at_0%_0%,rgba(124,58,237,0.03),transparent_40%)] p-6 lg:p-12 custom-scrollbar relative">
+          <AnimatePresence mode="wait">
+            {dataLoading ? (
+              <motion.div 
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 z-50 flex items-center justify-center bg-background-primary/80 backdrop-blur-3xl"
+              >
+                <div className="flex flex-col items-center gap-8">
+                  <div className="relative h-20 w-20">
+                    <div className="absolute inset-0 rounded-[2rem] bg-accent-primary/20 animate-ping" />
+                    <div className="relative h-20 w-20 rounded-[2rem] bg-accent-primary flex items-center justify-center text-white shadow-premium animate-pulse">
+                      <Layers size={40} />
+                    </div>
+                  </div>
+                  <div className="space-y-2 text-center">
+                    <p className="text-[12px] font-black text-text-primary uppercase tracking-[0.5em] animate-pulse">Synchronizing Core</p>
+                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest opacity-60">Initializing temporal databases</p>
+                  </div>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="content"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="max-w-[1600px] mx-auto w-full"
+              >
+                {activeView === 'stats' ? (
+                  <Statistics />
+                ) : activeView === 'history' ? (
+                  <History />
+                ) : (
+                  <Dashboard
+                    subject={activeSubject}
+                    topics={activeTopics}
+                    allTopics={allTopics}
+                    profile={profile}
+                    onStatusChange={handleStatusChange}
+                    onAddTopic={handleAddTopic}
+                    onEditTopic={handleEditTopic}
+                    onLogTime={handleLogTime}
+                    onDeleteTopic={handleDeleteTopic}
+                  />
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </main>
       </div>
 

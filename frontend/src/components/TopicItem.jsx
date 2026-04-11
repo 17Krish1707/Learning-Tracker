@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, Trash2, CheckCircle2, Circle, AlertCircle, Pencil, FileText, Check, X, Timer, MoreVertical } from 'lucide-react';
+import { Calendar, Clock, Trash2, CheckCircle2, Circle, AlertCircle, Pencil, FileText, Check, X, Timer, MoreVertical, Zap } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import StudyLogger from './StudyLogger';
 import { cn } from '../utils/cn';
 
@@ -28,120 +29,157 @@ function TopicItem({ topic, index, onStatusChange, onLogTime, onDeleteTopic, onE
   };
 
   return (
-    <div className="group relative p-4 lg:p-6 border-b border-border-color last:border-0 hover:bg-background-secondary/50 transition-colors animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
-      <div className="flex items-start gap-4 lg:gap-6">
+    <div className="group relative p-6 lg:p-10 border-b border-border last:border-0 hover:bg-background-secondary/40 transition-all duration-300 animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
+      <div className="flex items-start gap-6 lg:gap-10">
         <button 
           onClick={toggleStatus}
           className={cn(
-            "shrink-0 mt-1 h-7 w-7 rounded-xl border-2 flex items-center justify-center transition-all bg-background-secondary shadow-lg",
+            "shrink-0 mt-1 h-9 w-9 rounded-[1.1rem] border-2 flex items-center justify-center transition-all bg-background-primary shadow-soft relative overflow-hidden",
             topic.status === 'Completed' 
-              ? "bg-success/10 border-success text-success shadow-success/10" 
+              ? "bg-success/10 border-success text-success scale-110" 
               : topic.status === 'In Progress'
-                ? "border-accent-primary text-accent-primary bg-accent-primary/5"
-                : "border-border text-text-muted/30 hover:border-accent-primary hover:text-accent-primary"
+                ? "border-accent-primary text-accent-primary bg-accent-primary/5 ring-4 ring-accent-primary/10"
+                : "border-border text-text-muted/20 hover:border-accent-primary hover:text-accent-primary hover:bg-accent-primary/5 shadow-none"
           )}
         >
-          {topic.status === 'Completed' ? (
-            <Check size={16} strokeWidth={4} />
-          ) : topic.status === 'In Progress' ? (
-            <div className="relative flex items-center justify-center">
-               <Circle size={18} className="animate-pulse-subtle" />
-               <div className="absolute h-2 w-2 rounded-full bg-accent-primary" />
-            </div>
-          ) : (
-            <Circle size={18} strokeWidth={2} />
-          )}
+          <AnimatePresence mode="wait">
+            {topic.status === 'Completed' ? (
+              <motion.div
+                key="check"
+                initial={{ scale: 0.5, rotate: -45, opacity: 0 }}
+                animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              >
+                 <Check size={20} strokeWidth={4} />
+              </motion.div>
+            ) : topic.status === 'In Progress' ? (
+              <motion.div 
+                key="progress"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="relative flex items-center justify-center"
+              >
+                 <Circle size={22} className="animate-spin-slow opacity-10" />
+                 <div className="absolute h-2.5 w-2.5 rounded-full bg-accent-primary shadow-[0_0_12px_rgba(167,139,250,0.8)]" />
+              </motion.div>
+            ) : (
+              <motion.div key="none" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <Circle size={22} strokeWidth={2} className="opacity-40" />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </button>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-1">
-            {isEditingTitle ? (
-              <input
-                className="flex-1 bg-background-primary border border-accent-primary rounded-lg px-2 py-0.5 text-lg font-semibold outline-none"
-                defaultValue={topic.title}
-                autoFocus
-                onBlur={e => { onEditTopic(topic.id, { title: e.target.value }); setIsEditingTitle(false); }}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') { onEditTopic(topic.id, { title: e.target.value }); setIsEditingTitle(false); }
-                  if (e.key === 'Escape') setIsEditingTitle(false);
-                }}
-              />
-            ) : (
-              <h4 
-                className={`text-lg font-semibold truncate transition-colors cursor-pointer ${topic.status === 'Completed' ? 'text-text-muted line-through' : 'text-text-primary'}`}
-                onDoubleClick={() => setIsEditingTitle(true)}
-              >
-                {topic.title}
-              </h4>
-            )}
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getPriorityStyles(topic.priority)}`}>
-              {topic.priority}
-            </span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-6">
+            <div className="flex-1 min-w-0">
+              {isEditingTitle ? (
+                <input
+                  autoFocus
+                  defaultValue={topic.title}
+                  onBlur={e => { onEditTopic(topic.id, { title: e.target.value }); setIsEditingTitle(false); }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') { onEditTopic(topic.id, { title: e.target.value }); setIsEditingTitle(false); }
+                    if (e.key === 'Escape') setIsEditingTitle(false);
+                  }}
+                  className="w-full bg-background-tertiary border-2 border-accent-primary/30 rounded-2xl px-5 py-2.5 text-xl font-black text-text-primary outline-none shadow-premium italic"
+                />
+              ) : (
+                <h4 
+                  className={cn(
+                    "text-2xl font-black truncate transition-all cursor-pointer tracking-tight",
+                    topic.status === 'Completed' ? "text-text-muted/40 line-through italic" : "text-text-primary group-hover:text-accent-primary"
+                  )}
+                  onDoubleClick={() => setIsEditingTitle(true)}
+                >
+                  {topic.title}
+                </h4>
+              )}
+            </div>
+            
+            <div className="flex items-center gap-4 shrink-0">
+               <span className={cn(
+                  "px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-[0.25em] border shadow-sm transition-all",
+                  getPriorityStyles(topic.priority)
+               )}>
+                 {topic.priority}
+               </span>
+               <div className="h-6 w-[1px] bg-border/40 mx-1" />
+               <button onClick={() => onDeleteTopic(topic.id)} className="p-2.5 text-text-muted hover:text-danger hover:bg-danger/5 rounded-xl transition-all opacity-0 group-hover:opacity-100">
+                  <Trash2 size={20} />
+               </button>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-sm text-text-muted mb-3">
-            {topic.deadline && (
-              <span className="flex items-center gap-1.5">
-                <Calendar size={14} />
-                {new Date(topic.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-              </span>
-            )}
-            <span className="flex items-center gap-1.5">
-              <Timer size={14} />
-              {topic.timeSpent || 0}m logged
-            </span>
-            <button onClick={() => setIsEditingNotes(true)} className="flex items-center gap-1.5 hover:text-accent-primary transition-colors">
-              <FileText size={14} />
-              {topic.notes ? 'Edit Notes' : 'Add Note'}
+          <div className="flex flex-wrap items-center gap-8 text-[12px] font-black uppercase tracking-[0.2em] text-text-muted opacity-70 mb-8">
+            <div className="flex items-center gap-3">
+              <Timer size={16} className="text-accent-primary opacity-40" />
+              <span className="italic">{topic.timeSpent || 0}m logged</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Calendar size={16} className="text-accent-secondary opacity-40" />
+              <span className="italic">{topic.lastStudied || 'No protocol'}</span>
+            </div>
+            <button 
+              onClick={() => setShowLogger(!showLogger)}
+              className="flex items-center gap-3 text-accent-primary hover:text-accent-secondary transition-all ml-auto"
+            >
+              <Zap size={16} fill="currentColor" className="opacity-40" />
+              <span>Record Sprint</span>
             </button>
           </div>
 
-          {topic.notes && !isEditingNotes && (
-            <p className="text-sm text-text-secondary line-clamp-2 bg-background-tertiary/50 p-2 rounded-lg border border-border-color/50 italic mb-3">
-              "{topic.notes}"
-            </p>
-          )}
+          <AnimatePresence>
+            {showLogger && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-8 overflow-hidden"
+              >
+                <div className="p-8 rounded-[2.5rem] bg-background-tertiary/40 border border-border/60 shadow-inner backdrop-blur-sm">
+                   <StudyLogger topic={topic} onLogTime={onLogTime} onClose={() => setShowLogger(false)} />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {isEditingNotes && (
-            <div className="mb-4">
-              <textarea
-                className="w-full h-24 p-3 text-sm bg-background-primary border border-border-color rounded-xl outline-none focus:border-accent-primary transition-colors resize-none"
-                value={notesText}
-                onChange={e => setNotesText(e.target.value)}
-                placeholder="Share your thoughts or keep track of details..."
-                autoFocus
-              />
-              <div className="flex justify-end gap-2 mt-2">
-                <button onClick={() => setIsEditingNotes(false)} className="px-3 py-1 text-xs font-semibold text-text-muted hover:text-text-primary transition-colors">Cancel</button>
-                <button onClick={() => { onEditTopic(topic.id, { notes: notesText }); setIsEditingNotes(false); }} className="px-3 py-1 text-xs font-semibold bg-accent-primary text-white rounded-lg hover:opacity-90 transition-opacity">Save Note</button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-          <button 
-            onClick={() => setShowLogger(!showLogger)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              showLogger ? 'bg-background-tertiary text-text-primary' : 'bg-background-secondary border border-border-color hover:border-accent-primary text-text-secondary hover:text-accent-primary'
-            }`}
-          >
-            <Clock size={14} /> {showLogger ? 'Close' : 'Log Time'}
-          </button>
-          <button 
-            onClick={() => onDeleteTopic(topic.id)}
-            className="p-2 rounded-lg text-text-muted hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all"
-          >
-            <Trash2 size={16} />
-          </button>
+          {/* Notes Area */}
+          <div className="relative group/notes">
+             {isEditingNotes ? (
+               <div className="space-y-4">
+                 <textarea
+                   autoFocus
+                   rows={4}
+                   value={notesText}
+                   onChange={e => setNotesText(e.target.value)}
+                   className="w-full bg-background-tertiary border-2 border-accent-primary/20 rounded-[2.5rem] p-8 text-base font-medium text-text-secondary outline-none shadow-premium focus:border-accent-primary transition-all resize-none italic leading-relaxed"
+                   placeholder="Enter your conceptual synthesis..."
+                 />
+                 <div className="flex justify-end gap-3">
+                    <button onClick={() => setIsEditingNotes(false)} className="px-6 py-2 rounded-xl text-xs font-black uppercase text-text-muted hover:text-text-primary transition-all">Abort</button>
+                    <button onClick={() => { onEditTopic(topic.id, { notes: notesText }); setIsEditingNotes(false); }} className="px-8 py-2 rounded-xl text-xs font-black uppercase bg-accent-primary text-white shadow-premium hover:opacity-90 transition-all">Commit Note</button>
+                 </div>
+               </div>
+             ) : (
+               <div 
+                 onClick={() => setIsEditingNotes(true)}
+                 className="w-full min-h-[120px] p-10 rounded-[3.5rem] bg-background-tertiary/20 border border-border/40 hover:border-accent-primary/30 hover:bg-background-tertiary/40 transition-all cursor-text relative overflow-hidden group"
+               >
+                 <div className="absolute top-6 right-8 text-[9px] font-black uppercase tracking-[0.4em] text-accent-primary opacity-0 group-hover:opacity-40 transition-opacity">Metadata Analysis</div>
+                 {!topic.notes ? (
+                   <div className="flex flex-col items-center justify-center h-full gap-4 opacity-20 py-2">
+                      <FileText size={24} strokeWidth={1} />
+                      <p className="text-[10px] uppercase font-black tracking-[0.3em] italic">Synthesis pending</p>
+                   </div>
+                 ) : (
+                   <p className="text-base font-medium text-text-secondary whitespace-pre-wrap leading-relaxed italic opacity-80">{topic.notes}</p>
+                 )}
+               </div>
+             )}
+          </div>
         </div>
       </div>
-
-      {showLogger && (
-        <div className="mt-4 p-4 rounded-2xl bg-background-secondary border border-border-color animate-fade-in shadow-inner">
-          <StudyLogger topic={topic} onLogTime={onLogTime} onClose={() => setShowLogger(false)} />
-        </div>
-      )}
     </div>
   );
 }

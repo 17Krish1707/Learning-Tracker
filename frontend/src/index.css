@@ -4,66 +4,68 @@
 @tailwind utilities;
 
 :root {
-  /* Premium SaaS Light Palette (High Contrast Differentiation) */
+  /* Premium SaaS Light Palette (High Contrast & Professional) */
   --bg-primary: #ffffff;
-  --bg-secondary: #f4f7fa;   /* Slightly bluer gray for contrast */
-  --bg-tertiary: #e9eff5;
-  --bg-glass: rgba(255, 255, 255, 0.7);
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --bg-glass: rgba(255, 255, 255, 0.72);
 
-  --text-primary: #020617;   /* Slate 950 */
-  --text-secondary: #334155; /* Slate 700 */
-  --text-muted: #64748b;    /* Slate 500 */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
 
-  --accent-primary: #4f46e5;  /* Indigo 600 - Stronger */
-  --accent-secondary: #c026d3; /* Fuchsia 600 - More punchy */
-  --accent-highlight: #10b981; /* Emerald 500 - For specific growth elements */
-  --accent-glow: rgba(79, 70, 229, 0.2);
+  --accent-primary: #7c3aed;   /* Vibrant Violet 600 */
+  --accent-secondary: #db2777; /* Rose 600 */
+  --accent-highlight: #0ea5e9; /* Sky 500 */
+  --accent-glow: rgba(124, 58, 237, 0.15);
 
-  --border-color: #e2e8f0;    /* Slate 200 */
-  --border-light: #f1f5f9;    /* Slate 100 */
+  --border-color: #e2e8f0;
+  --border-light: #f1f5f9;
 
-  /* Semantic Differentiation */
   --success: #059669;
   --warning: #d97706;
   --danger: #dc2626;
+
+  --shadow-soft: 0 10px 40px -6px rgba(0, 0, 0, 0.04);
+  --shadow-premium: 0 20px 60px -12px rgba(15, 23, 42, 0.12);
+  --shadow-glow: 0 0 20px -5px var(--accent-primary);
 
   --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dark {
-  /* Premium SaaS Dark Palette (Deep Obsidian & Ultraviolet) */
-  --bg-primary: #020617;      /* Slate 950 */
-  --bg-secondary: #0a1128;    /* Deep Midnight Blue for differentiation */
-  --bg-tertiary: #16223d;     /* Lighter navy for cards */
-  --bg-glass: rgba(2, 6, 23, 0.75);
+  /* Ultra-Premium Obsidian & Ultraviolet Palette */
+  --bg-primary: #020617;      /* Real Black-Blue */
+  --bg-secondary: #0a0f25;    /* Deep Navy */
+  --bg-tertiary: #111827;     /* High Contrast Surface */
+  --bg-glass: rgba(2, 6, 23, 0.8);
 
-  --text-primary: #f8fafc;    /* Slate 50 */
-  --text-secondary: #94a3b8;  /* Slate 400 */
-  --text-muted: #475569;     /* Slate 600 */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #475569;
 
-  --accent-primary: #818cf8;  /* Indigo 400 */
-  --accent-secondary: #f472b6; /* Pink 400 - Contrast with Indigo */
-  --accent-highlight: #34d399; /* Emerald 400 */
+  --accent-primary: #a78bfa;  /* Lighter, Glowing Violet */
+  --accent-secondary: #f472b6; /* Soft Rose */
+  --accent-highlight: #38bdf8; /* Sky 400 */
 
-  --border-color: #1e293b;    /* Slate 800 */
-  --border-light: #0f172a;    /* Slate 900 */
+  --border-color: #1e293b;
+  --border-light: #0f172a;
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  letter-spacing: -0.015em;
 }
 
 body {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Outfit', 'Inter', sans-serif;
   background-color: var(--bg-primary);
-  background-image: var(--bg-gradient);
-  background-attachment: fixed;
   color: var(--text-primary);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
 }
 
 a {
