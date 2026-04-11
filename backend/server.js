@@ -15,6 +15,7 @@ const sessionRoutes = require('./routes/sessions');
 const statsRoutes = require('./routes/stats');
 const folderRoutes = require('./routes/folders');
 
+
 const app = express();
 
 // ─── CORS ────────────────────────────────────────────────────────────────────
@@ -66,6 +67,7 @@ app.use('/api/topics',   topicRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/stats',    statsRoutes);
 app.use('/api/folders',  folderRoutes);
+
 
 // Health check
 app.get(['/api/health', '/health'], (req, res) => {

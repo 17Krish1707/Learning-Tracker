@@ -32,7 +32,7 @@ const topicSchema = new mongoose.Schema(
     },
     hoursSpent: { type: Number, default: 0, min: 0 },
     deadline: { type: Date, default: null },
-    notes: { type: String, default: '', maxlength: 2000 },
+    notes: { type: String, default: '', maxlength: 50000 },
     completedAt: { type: Date, default: null },
   },
   { timestamps: true }
