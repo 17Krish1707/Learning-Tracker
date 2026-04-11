@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, Trash2, CheckCircle2, Circle, AlertCircle, Pencil, FileText, Check, X, Timer, MoreVertical } from 'lucide-react';
 import StudyLogger from './StudyLogger';
+import { cn } from '../utils/cn';
 
 function TopicItem({ topic, index, onStatusChange, onLogTime, onDeleteTopic, onEditTopic }) {
   const [showLogger, setShowLogger] = useState(false);
@@ -31,16 +32,25 @@ function TopicItem({ topic, index, onStatusChange, onLogTime, onDeleteTopic, onE
       <div className="flex items-start gap-4 lg:gap-6">
         <button 
           onClick={toggleStatus}
-          className={`shrink-0 mt-1 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all ${
+          className={cn(
+            "shrink-0 mt-1 h-7 w-7 rounded-xl border-2 flex items-center justify-center transition-all bg-background-secondary shadow-lg",
             topic.status === 'Completed' 
-              ? 'bg-success border-success text-white' 
+              ? "bg-success/10 border-success text-success shadow-success/10" 
               : topic.status === 'In Progress'
-                ? 'border-accent-primary text-accent-primary'
-                : 'border-border-color text-text-muted hover:border-text-muted'
-          }`}
+                ? "border-accent-primary text-accent-primary bg-accent-primary/5"
+                : "border-border text-text-muted/30 hover:border-accent-primary hover:text-accent-primary"
+          )}
         >
-          {topic.status === 'Completed' && <Check size={14} strokeWidth={3} />}
-          {topic.status === 'In Progress' && <div className="h-2 w-2 rounded-full bg-accent-primary animate-pulse" />}
+          {topic.status === 'Completed' ? (
+            <Check size={16} strokeWidth={4} />
+          ) : topic.status === 'In Progress' ? (
+            <div className="relative flex items-center justify-center">
+               <Circle size={18} className="animate-pulse-subtle" />
+               <div className="absolute h-2 w-2 rounded-full bg-accent-primary" />
+            </div>
+          ) : (
+            <Circle size={18} strokeWidth={2} />
+          )}
         </button>
 
         <div className="flex-1 min-w-0">

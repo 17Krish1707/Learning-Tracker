@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
-import { X, User, BookOpen, Settings, Info, Check, LogOut, Shield, Zap, Globe, Sun, Moon } from 'lucide-react';
+import { 
+  X, User, BookOpen, Settings, Info, Check, LogOut, 
+  Shield, Zap, Globe, Sun, Moon, Upload 
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { cn } from '../utils/cn';
+import { authAPI } from '../services/api';
 
 const AVATAR_OPTIONS = ['🎓', '🧑‍💻', '📚', '🦊', '🐼', '🚀', '🎯', '⚡'];
 
@@ -21,15 +25,24 @@ function ProfileModal({ profile, onSave, onClose, onToggleTheme, initialTab = 'A
 
   const update = (key, value) => setForm(prev => ({ ...prev, [key]: value }));
 
-  const handleSave = () => {
-    updateUser({ 
-      name: form.name, 
-      email: form.email, 
-      picture: form.avatar 
-    });
-    onSave(form);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    try {
+      const updates = { 
+        name: form.name, 
+        avatar: form.avatar,
+        picture: form.picture,
+        studyGoal: form.studyGoal,
+        weeklyTarget: form.weeklyTarget
+      };
+      
+      await authAPI.updateMe(updates);
+      updateUser(updates); // Update local context
+      onSave(form);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      console.error('Failed to update profile:', err);
+    }
   };
 
   return (
@@ -44,8 +57,10 @@ function ProfileModal({ profile, onSave, onClose, onToggleTheme, initialTab = 'A
         {/* Sidebar Tabs */}
         <div className="w-full md:w-64 bg-background-secondary/50 border-r border-border p-6 flex flex-col">
           <div className="flex items-center gap-4 mb-10 min-w-0">
-            <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-accent-primary/20 shrink-0 overflow-hidden", !form.avatar?.startsWith('http') && "bg-gradient-to-tr from-accent-primary to-accent-secondary")}>
-              {form.avatar?.startsWith('http') ? (
+            <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-accent-primary/20 shrink-0 overflow-hidden", !(form.picture || (form.avatar && form.avatar.startsWith('http'))) && "bg-gradient-to-tr from-accent-primary to-accent-secondary")}>
+              {form.picture ? (
+                <img src={form.picture} alt="" className="h-full w-full object-cover" />
+              ) : form.avatar?.startsWith('http') ? (
                 <img src={form.avatar} alt="" className="h-full w-full object-cover" />
               ) : (
                 form.avatar
@@ -93,46 +108,100 @@ function ProfileModal({ profile, onSave, onClose, onToggleTheme, initialTab = 'A
                  className="space-y-8"
                >
                  {activeTab === 'Account' && (
-                   <div className="space-y-6">
-                     <section>
-                       <label className="text-xs font-bold text-text-muted uppercase tracking-widest mb-4 block">Choose Identity</label>
-                       <div className="grid grid-cols-4 sm:grid-cols-8 gap-3">
-                         {AVATAR_OPTIONS.map(a => (
-                           <button
-                             key={a}
-                             onClick={() => update('avatar', a)}
-                             className={cn(
-                               "h-10 w-10 flex items-center justify-center text-xl rounded-xl border-2 transition-all",
-                               form.avatar === a 
-                                 ? "border-accent-primary bg-accent-primary/5 translate-y--1" 
-                                 : "border-transparent hover:border-border-color bg-background-tertiary"
-                             )}
-                           >{a}</button>
-                         ))}
-                       </div>
-                     </section>
+                    <div className="space-y-6">
+                      <section>
+                        <header className="mb-4 flex items-center justify-between">
+                          <div>
+                             <label className="text-xs font-black text-text-muted uppercase tracking-[0.2em] block mb-1">Look & Identity</label>
+                             <p className="text-[10px] text-text-muted opacity-50 italic">Choose an emoji or upload an image.</p>
+                          </div>
+                          <button 
+                            type="button"
+                            onClick={() => document.getElementById('profile-upload').click()}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent-primary/10 text-accent-primary text-[10px] font-black uppercase tracking-widest hover:bg-accent-primary hover:text-white transition-all border border-accent-primary/20"
+                          >
+                             <Upload size={12} /> Upload
+                          </button>
+                          <input 
+                            id="profile-upload" 
+                            type="file" 
+                            accept="image/*" 
+                            className="hidden" 
+                            onChange={async (e) => {
+                               const file = e.target.files[0];
+                               if (file) {
+                                 const reader = new FileReader();
+                                 reader.onloadend = () => {
+                                   update('picture', reader.result);
+                                   update('avatar', ''); 
+                                 };
+                                 reader.readAsDataURL(file);
+                               }
+                            }}
+                          />
+                        </header>
+                        
+                        <div className="grid grid-cols-4 sm:grid-cols-8 gap-3 mb-6">
+                          {AVATAR_OPTIONS.map(a => (
+                            <button
+                              key={a}
+                              onClick={() => {
+                                update('avatar', a);
+                                update('picture', ''); 
+                              }}
+                              className={cn(
+                                "h-10 w-10 flex items-center justify-center text-xl rounded-xl border-2 transition-all hover:scale-110 active:scale-95",
+                                form.avatar === a && !form.picture
+                                  ? "border-accent-primary bg-accent-primary/5 shadow-soft" 
+                                  : "border-transparent bg-background-tertiary"
+                              )}
+                            >{a}</button>
+                          ))}
+                        </div>
 
-                     <div className="space-y-4">
-                       <div className="space-y-2">
-                         <label className="text-xs font-bold text-text-muted uppercase tracking-widest block pl-1">Display Name</label>
-                         <input 
-                           className="w-full h-12 px-4 bg-background-secondary border border-border rounded-xl text-sm outline-none focus:border-accent-primary transition-colors" 
-                           value={form.name} 
-                           onChange={e => update('name', e.target.value)} 
-                           placeholder="Enter your name" 
-                         />
-                       </div>
-                       <div className="space-y-2">
-                         <label className="text-xs font-bold text-text-muted uppercase tracking-widest block pl-1">Email Address</label>
-                         <input 
-                           className="w-full h-12 px-4 bg-background-secondary border border-border rounded-xl text-sm outline-none focus:border-accent-primary transition-colors" 
-                           value={form.email} 
-                           onChange={e => update('email', e.target.value)}
-                           type="email" 
-                         />
-                       </div>
-                     </div>
-                   </div>
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block pl-1">Image URL (Optional)</label>
+                           <input 
+                             className="w-full h-12 px-4 bg-background-secondary border border-border rounded-xl text-sm font-bold outline-none focus:border-accent-primary transition-all placeholder:font-normal placeholder:opacity-50" 
+                             value={form.picture?.startsWith('data:image') ? 'Uploaded Local File' : (form.picture || '')} 
+                             onChange={e => {
+                               update('picture', e.target.value);
+                               if(e.target.value) update('avatar', ''); 
+                             }} 
+                             placeholder="https://..." 
+                             disabled={form.picture?.startsWith('data:image')}
+                           />
+                           {form.picture?.startsWith('data:image') && (
+                             <button 
+                               type="button" 
+                               onClick={() => update('picture', '')}
+                               className="text-[9px] font-black text-red-500 uppercase tracking-widest mt-1 hover:underline"
+                             >Remove Uploaded Image</button>
+                           )}
+                        </div>
+                      </section>
+
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block pl-1">Full Name</label>
+                          <input 
+                            className="w-full h-12 px-4 bg-background-secondary border border-border rounded-xl text-sm font-bold outline-none focus:border-accent-primary transition-colors" 
+                            value={form.name} 
+                            onChange={e => update('name', e.target.value)} 
+                            placeholder="Your name" 
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block pl-1">Email</label>
+                          <input 
+                            className="w-full h-12 px-4 bg-background-secondary border border-border rounded-xl text-sm font-bold opacity-60 cursor-not-allowed" 
+                            value={form.email} 
+                            disabled
+                            type="email" 
+                          />
+                        </div>
+                      </div>
+                    </div>
                  )}
 
                  {activeTab === 'Study' && (
@@ -176,7 +245,7 @@ function ProfileModal({ profile, onSave, onClose, onToggleTheme, initialTab = 'A
                                "flex items-center justify-center gap-2 h-12 rounded-xl border text-sm font-bold transition-all",
                                form.theme === 'dark' 
                                  ? "bg-accent-primary text-white border-accent-primary shadow-md" 
-                                 : "bg-background-tertiary text-text-secondary border-transparent hover:border-border-color"
+                                 : "bg-background-tertiary text-text-secondary border-transparent hover:border-border"
                              )}
                            >
                              🌙 Night
@@ -187,7 +256,7 @@ function ProfileModal({ profile, onSave, onClose, onToggleTheme, initialTab = 'A
                                "flex items-center justify-center gap-2 h-12 rounded-xl border text-sm font-bold transition-all",
                                form.theme === 'light' 
                                  ? "bg-accent-primary text-white border-accent-primary shadow-md" 
-                                 : "bg-background-tertiary text-text-secondary border-transparent hover:border-border-color"
+                                 : "bg-background-tertiary text-text-secondary border-transparent hover:border-border"
                              )}
                            >
                              ☀️ Day

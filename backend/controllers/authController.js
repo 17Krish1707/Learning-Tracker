@@ -93,7 +93,7 @@ const getMe = async (req, res) => {
 // @route   PUT /api/auth/me
 const updateMe = async (req, res) => {
   try {
-    const allowedFields = ['name', 'avatar', 'studyGoal', 'weeklyTarget'];
+    const allowedFields = ['name', 'avatar', 'picture', 'studyGoal', 'weeklyTarget'];
     const updates = {};
     allowedFields.forEach((field) => {
       if (req.body[field] !== undefined) updates[field] = req.body[field];

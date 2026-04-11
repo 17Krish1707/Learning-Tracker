@@ -100,7 +100,7 @@ function AddTopic({ onAdd, onClose }) {
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-border-color">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
           <button type="button" onClick={onClose} className="px-5 h-11 rounded-xl text-sm font-semibold text-text-secondary hover:bg-background-tertiary transition-colors">
             Cancel
           </button>

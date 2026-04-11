@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, Flame, Moon, Sun, Layers, Search, ChevronDown, LogOut, Settings, User as UserIcon, Zap, Command, Menu } from 'lucide-react';
+import { Bell, Flame, Moon, Sun, Layers, Search, ChevronDown, LogOut, Settings, User as UserIcon, Zap, Command, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { cn } from '../utils/cn';
 import GoogleSignInButton from './GoogleSignInButton';
 
 function Header({ 
-  streak, profile, notifications, onMarkAllRead, onOpenProfile, onToggleTheme,
+  streak, profile, notifications, onMarkAllRead, onClearNotifications, onDeleteNotification, onOpenProfile, onToggleTheme,
   searchTerm, onSearchChange, onMenuToggle
 }) {
   const [showNotifs, setShowNotifs] = useState(false);
@@ -112,7 +112,7 @@ function Header({
                       >
                         <div className="flex items-center justify-between px-4 py-3 border-b border-border mb-2">
                           <span className="text-sm font-black uppercase tracking-widest text-text-primary">Intelligence Hub</span>
-                          <button className="text-[10px] font-black uppercase tracking-widest text-accent-primary hover:opacity-70" onClick={onMarkAllRead}>Clear All</button>
+                          <button className="text-[10px] font-black uppercase tracking-widest text-accent-primary hover:opacity-70" onClick={onClearNotifications}>Clear All</button>
                         </div>
                         <div className="max-h-[400px] overflow-y-auto space-y-1">
                           {notifications.length === 0 ? (
@@ -124,12 +124,18 @@ function Header({
                             </div>
                           ) : (
                             notifications.map(n => (
-                              <div key={n.id} className={cn("flex gap-4 p-4 rounded-2xl hover:bg-background-secondary transition-all cursor-pointer group", n.read ? 'opacity-40' : 'bg-accent-primary/5 border border-accent-primary/10')}>
-                                <div className="h-2.5 w-2.5 mt-1.5 rounded-full shrink-0 group-hover:scale-150 transition-transform" style={{ backgroundColor: typeColor[n.type] }} />
-                                <div className="space-y-1">
-                                  <p className="text-sm font-bold text-text-primary leading-snug">{n.message}</p>
+                              <div key={n.id} className={cn("flex items-center gap-4 p-4 rounded-2xl hover:bg-background-secondary transition-all cursor-pointer group relative", n.read ? 'opacity-40' : 'bg-accent-primary/5 border border-accent-primary/10')}>
+                                <div className="h-2.5 w-2.5 rounded-full shrink-0 group-hover:scale-150 transition-transform" style={{ backgroundColor: typeColor[n.type] }} />
+                                <div className="flex-1 space-y-1">
+                                  <p className="text-sm font-bold text-text-primary leading-snug pr-6">{n.message}</p>
                                   <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">{n.time}</span>
                                 </div>
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); onDeleteNotification(n.id); }}
+                                  className="absolute top-4 right-4 p-1 text-text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                                >
+                                  <X size={14} />
+                                </button>
                               </div>
                             ))
                           )}

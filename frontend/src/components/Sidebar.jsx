@@ -36,34 +36,57 @@ function Sidebar({
     setModal(null);
   };
 
-  const NavItem = ({ icon: Icon, label, active, onClick, badge, color }) => (
-    <button
-      onClick={onClick}
-      className={cn(
-        "group flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-medium transition-all",
-        active
-          ? 'bg-accent-primary text-white shadow-lg shadow-accent-primary/20'
-          : 'text-text-secondary hover:bg-background-tertiary hover:text-text-primary'
-      )}
+  const handleDragStart = (e, subjectId) => {
+    e.dataTransfer.setData('subjectId', subjectId);
+  };
+
+  const handleDrop = (e, folderId) => {
+    e.preventDefault();
+    const subjectId = e.dataTransfer.getData('subjectId');
+    if (subjectId && onEditSubject) {
+      onEditSubject(subjectId, { folderId });
+    }
+  };
+
+  const NavItem = ({ icon: Icon, label, active, onClick, badge, color, draggable, onDragStart }) => (
+    <div
+      draggable={draggable}
+      onDragStart={onDragStart}
+      className="relative"
     >
-      <div className="flex items-center gap-3">
-        <div className={cn(
-          "flex h-8 w-8 items-center justify-center rounded-lg transition-all",
-          active ? 'bg-white/20' : 'bg-background-secondary border border-border group-hover:border-accent-primary/30'
-        )} style={!active && color ? { color: color } : {}}>
-          <Icon size={16} />
+      <button
+        onClick={onClick}
+        className={cn(
+          "group flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-bold transition-all mb-1",
+          active
+            ? 'bg-accent-primary text-white shadow-lg shadow-accent-primary/25 scale-[1.02]'
+            : 'text-text-secondary hover:bg-background-tertiary hover:text-text-primary'
+        )}
+      >
+        <div className="flex items-center gap-3">
+          <div className={cn(
+            "flex h-8 w-8 items-center justify-center rounded-xl transition-all shadow-sm",
+            active ? 'bg-white/20' : 'bg-background-secondary border border-border group-hover:scale-110'
+          )} style={!active && color ? { 
+            backgroundColor: `${color}25`, 
+            color: color, 
+            borderColor: `${color}40`,
+            boxShadow: `0 4px 12px ${color}15`
+          } : {}}>
+            <Icon size={15} strokeWidth={2.5} />
+          </div>
+          <span className="truncate max-w-[140px] tracking-tight">{label}</span>
         </div>
-        <span className="truncate max-w-[140px]">{label}</span>
-      </div>
-      {badge !== undefined && (
-        <span className={cn(
-          "flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold",
-          active ? 'bg-white/30 text-white' : 'bg-background-tertiary text-text-muted'
-        )}>
-          {badge}
-        </span>
-      )}
-    </button>
+        {badge !== undefined && (
+          <span className={cn(
+            "flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-black",
+            active ? 'bg-white/30 text-white' : 'bg-background-tertiary text-text-muted'
+          )}>
+            {badge}
+          </span>
+        )}
+      </button>
+    </div>
   );
 
   return (
@@ -75,7 +98,7 @@ function Sidebar({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-md lg:hidden"
           />
         )}
       </AnimatePresence>
@@ -86,40 +109,40 @@ function Sidebar({
       )}>
         <div className="p-6 space-y-8 flex-1 overflow-y-auto">
           <div className="flex items-center justify-between lg:hidden mb-6">
-            <span className="text-sm font-black uppercase tracking-widest text-accent-primary">Nav. Menu</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-accent-primary">Menu</span>
             <button onClick={onClose} className="p-2 rounded-xl bg-background-tertiary text-text-muted"><Icons.X size={20} /></button>
           </div>
 
           <div className="space-y-1">
-            <div className="px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted mb-4 opacity-50">Command Center</div>
+            <div className="px-3 text-[10px] font-black uppercase tracking-[0.3em] text-text-muted mb-4 opacity-40 italic">Main Menu</div>
             <NavItem
               icon={Icons.LayoutDashboard}
-              label="Overview"
+              label="Dashboard"
               active={activeView === 'dashboard'}
-              onClick={() => { setActiveSubjectId(null); setActiveView('dashboard'); }}
+              onClick={() => { setActiveSubjectId(null); setActiveView('dashboard'); onClose(); }}
             />
             <NavItem
               icon={Icons.BarChart3}
-              label="Statistics"
+              label="Growth Stats"
               active={activeView === 'stats'}
-              onClick={() => setActiveView('stats')}
+              onClick={() => { setActiveView('stats'); onClose(); }}
             />
             <NavItem
               icon={Icons.Clock}
-              label="History"
+              label="Study History"
               active={activeView === 'history'}
-              onClick={() => setActiveView('history')}
+              onClick={() => { setActiveView('history'); onClose(); }}
             />
           </div>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between px-3">
-              <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted opacity-50">Curriculum</h3>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted opacity-40 italic">Library</h3>
               <div className="flex gap-1">
-                <button onClick={() => handleOpenModal('addFolder')} className="p-1 rounded-lg text-text-muted hover:bg-background-tertiary hover:text-accent-primary transition-colors">
+                <button onClick={() => handleOpenModal('addFolder')} className="p-1.5 rounded-lg text-text-muted hover:bg-background-tertiary hover:text-accent-primary transition-colors">
                   <Icons.FolderPlus size={14} />
                 </button>
-                <button onClick={() => handleOpenModal('addSubject')} className="p-1 rounded-lg text-text-muted hover:bg-background-tertiary hover:text-accent-primary transition-colors">
+                <button onClick={() => handleOpenModal('addSubject')} className="p-1.5 rounded-lg text-text-muted hover:bg-background-tertiary hover:text-accent-primary transition-colors">
                   <Icons.Plus size={14} />
                 </button>
               </div>
@@ -133,23 +156,27 @@ function Sidebar({
                   <div key={folder.id} className="space-y-1">
                     <button
                       onClick={() => toggleFolder(folder.id)}
-                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-text-secondary hover:bg-background-tertiary transition-all group"
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => handleDrop(e, folder.id)}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold text-text-secondary hover:bg-background-tertiary transition-all group hover:scale-[1.02] active:scale-[0.98]"
                     >
                       <Icons.ChevronDown size={14} className={cn("transition-transform duration-200 opacity-40 group-hover:opacity-100", isCollapsed && "-rotate-90")} />
-                      <span className="text-base leading-none">{folder.emoji}</span>
-                      <span className="flex-1 text-left truncate">{folder.name}</span>
-                      <span className="text-[10px] font-black opacity-30 group-hover:opacity-100">{folderSubjects.length}</span>
+                      <span className="text-lg leading-none">{folder.emoji}</span>
+                      <span className="flex-1 text-left truncate tracking-tight">{folder.name}</span>
+                      <span className="text-[10px] font-black opacity-30 group-hover:opacity-100 px-2 py-0.5 rounded-md bg-background-tertiary">{folderSubjects.length}</span>
                     </button>
                     {!isCollapsed && (
-                      <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="pl-4 space-y-1 border-l-2 border-border/40 ml-4">
+                      <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="pl-4 space-y-0.5 border-l-2 border-border/20 ml-5 my-1">
                         {folderSubjects.map(subject => (
                           <NavItem
                             key={subject.id}
                             icon={Icons[subject.iconName] || Icons.Book}
                             label={subject.name}
                             active={activeSubjectId === subject.id}
-                            onClick={() => setActiveSubjectId(subject.id)}
+                            onClick={() => { setActiveSubjectId(subject.id); onClose(); }}
                             color={subject.color}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, subject.id)}
                           />
                         ))}
                       </motion.div>
@@ -158,21 +185,31 @@ function Sidebar({
                 );
               })}
 
-              {uncategorized.length > 0 && (
-                <div className="pt-4 space-y-1">
-                  <div className="px-3 py-2 text-[9px] font-black text-text-muted uppercase tracking-widest opacity-40">Loose Subjects</div>
+                <div 
+                  className={cn(
+                    "pt-4 space-y-1 transition-all rounded-2xl group/uncat",
+                    "hover:bg-accent-primary/5 border border-transparent hover:border-dashed hover:border-accent-primary/20"
+                  )}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => handleDrop(e, null)}
+                >
+                  <div className="flex items-center justify-between px-3 py-2">
+                    <div className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] opacity-30 italic">Uncategorized</div>
+                    <Icons.ArrowDownLeft size={10} className="text-accent-primary opacity-0 group-hover/uncat:opacity-100 transition-opacity" />
+                  </div>
                   {uncategorized.map(subject => (
                     <NavItem
                       key={subject.id}
                       icon={Icons[subject.iconName] || Icons.Book}
                       label={subject.name}
                       active={activeSubjectId === subject.id}
-                      onClick={() => setActiveSubjectId(subject.id)}
+                      onClick={() => { setActiveSubjectId(subject.id); onClose(); }}
                       color={subject.color}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, subject.id)}
                     />
                   ))}
                 </div>
-              )}
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Target, CheckCircle2, Circle, Plus, Trash2, Zap, ArrowRight, MoreHorizontal } from 'lucide-react';
+import { Target, CheckCircle2, Circle, Plus, Trash2, Zap, ArrowRight, MoreHorizontal, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../utils/cn';
 
@@ -39,12 +39,12 @@ function DailyGoals({ profile }) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h3 className="text-xl font-black text-text-primary tracking-tight">Today's Protocol</h3>
-          <p className="text-xs text-text-muted font-bold uppercase tracking-widest italic">Daily Sub-Goals</p>
+          <h3 className="text-xl font-black text-text-primary tracking-tight">Daily Checklist</h3>
+          <p className="text-xs text-text-muted font-bold uppercase tracking-widest italic">Today's Tasks</p>
         </div>
         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-accent-primary/5 border border-accent-primary/10">
            <Zap size={12} className="text-accent-primary" />
-           <span className="text-[10px] font-black text-accent-primary uppercase tracking-widest">{progressPercent}% Sync</span>
+           <span className="text-[10px] font-black text-accent-primary uppercase tracking-widest">{progressPercent}% Done</span>
         </div>
       </div>
 
@@ -66,11 +66,17 @@ function DailyGoals({ profile }) {
               <button 
                 onClick={() => toggleTask(task.id)}
                 className={cn(
-                  "h-6 w-6 rounded-lg flex items-center justify-center transition-all",
-                  task.completed ? "bg-accent-primary text-white" : "border-2 border-border text-text-muted hover:border-accent-primary hover:text-accent-primary"
+                  "h-7 w-7 rounded-xl border-2 flex items-center justify-center transition-all shadow-sm",
+                  task.completed 
+                    ? "bg-success/10 border-success text-success" 
+                    : "bg-background-secondary border-border text-text-muted/30 hover:border-accent-primary"
                 )}
               >
-                {task.completed && <CheckCircle2 size={14} strokeWidth={3} />}
+                {task.completed ? (
+                  <Check size={16} strokeWidth={4} />
+                ) : (
+                  <Circle size={18} strokeWidth={2} />
+                )}
               </button>
               <span className={cn("text-sm font-bold tracking-tight transition-all", task.completed ? "line-through text-text-muted" : "text-text-primary")}>
                 {task.text}
@@ -89,7 +95,7 @@ function DailyGoals({ profile }) {
       <form onSubmit={addTask} className="relative group">
         <input 
           type="text" 
-          placeholder="Append new sub-goal..." 
+          placeholder="Plan another task..." 
           value={newTask}
           onChange={(e) => setNewTask(e.target.value)}
           className="w-full h-12 rounded-2xl bg-background-tertiary/50 border border-border px-4 pr-12 text-sm font-bold text-text-primary placeholder:text-text-muted focus:border-accent-primary focus:bg-background-primary transition-all outline-none"
@@ -104,18 +110,18 @@ function DailyGoals({ profile }) {
 
       <div className="p-6 rounded-3xl bg-gradient-to-br from-indigo-500/10 to-fuchsia-500/10 border border-accent-primary/10">
          <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary opacity-60 italic">Metrical Status</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary opacity-60 italic">Daily Stats</span>
             <Target size={16} className="text-accent-primary" />
          </div>
          <div className="space-y-4">
             <div className="flex justify-between items-end">
                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-1">Depth Goal</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-1">Time Goal</p>
                   <h4 className="text-2xl font-black text-text-primary tracking-tighter">{profile?.studyGoal || 120}<span className="text-xs text-text-muted ml-1 lowercase">min</span></h4>
                </div>
                <div className="text-right">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-1">Consistency</p>
-                  <p className="text-sm font-black text-accent-primary tracking-widest uppercase">Elite</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-1">Target</p>
+                  <p className="text-sm font-black text-accent-primary tracking-widest uppercase">Active</p>
                </div>
             </div>
             <div className="h-1.5 w-full bg-background-primary/50 rounded-full overflow-hidden">

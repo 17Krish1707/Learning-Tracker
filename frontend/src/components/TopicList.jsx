@@ -14,7 +14,7 @@ function TopicList({ topics, onStatusChange, onLogTime, onDeleteTopic, onEditTop
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row items-center gap-4 px-6 py-4 bg-background-secondary/20 border-b border-border-color">
+      <div className="flex flex-col sm:flex-row items-center gap-4 px-6 py-4 bg-background-secondary/20 border-b border-border">
         <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
           <input 

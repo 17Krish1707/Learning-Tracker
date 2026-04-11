@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Target, Clock, CheckCircle2, Plus, TrendingUp, Calendar, Zap, ArrowUpRight, Search, LayoutGrid, List, ArrowRight } from 'lucide-react';
+import { Target, Clock, CheckCircle2, Plus, TrendingUp, Calendar, Zap, ArrowUpRight, Search, LayoutGrid, List, ArrowRight, Check, Circle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../utils/cn';
 import TopicList from './TopicList';
@@ -11,8 +11,16 @@ function Dashboard({ subject, topics, allTopics = [], profile, onStatusChange, o
   const [viewMode, setViewMode] = useState('grid');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Global Queue for Overview
-  const globalQueue = allTopics
+  const addTopicRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (showAddTopic && addTopicRef.current) {
+      addTopicRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [showAddTopic]);
+
+  // Task Queue for Overview
+  const actionItems = allTopics
     .filter(t => t.status !== 'Completed')
     .sort((a, b) => {
       const p = { 'High': 3, 'Medium': 2, 'Low': 1 };
@@ -31,59 +39,47 @@ function Dashboard({ subject, topics, allTopics = [], profile, onStatusChange, o
         animate={{ opacity: 1 }}
         className="max-w-7xl mx-auto space-y-12 py-4 pb-20"
       >
-        {/* Command Greeting */}
+        {/* Simple Greeting */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-border pb-12">
           <div className="space-y-4">
              <div className="flex items-center gap-3">
                <span className="h-1.5 w-1.5 rounded-full bg-accent-primary animate-pulse" />
-               <p className="text-[10px] font-black uppercase tracking-[0.4em] text-text-muted opacity-60 italic">System Protocol Engaged</p>
+               <p className="text-[10px] font-black uppercase tracking-[0.4em] text-text-muted opacity-60 italic">Online & Active</p>
              </div>
              <h1 className="text-7xl font-black text-text-primary tracking-tighter leading-[0.9]">
-               System <br /><span className="text-accent-primary italic">Overview.</span>
+               Hello, <br /><span className="text-accent-primary italic">{profile.name.split(' ')[0]}.</span>
              </h1>
-             <p className="text-xl text-text-muted font-medium max-w-xl">Welcome back, {profile.name}. Your academic neural network is active. Execute your daily protocol.</p>
+             <p className="text-xl text-text-muted font-medium max-w-xl">Your learning journey is on track. Here's what needs your attention today.</p>
           </div>
           
           <div className="flex items-center gap-6 divide-x divide-border">
              <div className="text-right">
-                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-1 opacity-50">Total Mastery</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-1 opacity-50">Mastery</p>
                 <h4 className="text-4xl font-black text-text-primary tracking-tighter">{globalProgress}%</h4>
              </div>
              <div className="text-right pl-6">
-                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-1 opacity-50">Effort Log</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-1 opacity-50">Total Time</p>
                 <h4 className="text-4xl font-black text-text-primary tracking-tighter">{(globalTotalTime/60).toFixed(1)}h</h4>
              </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-          {/* Left: Daily Protocol */}
+          {/* Left: Focus Plan */}
           <div className="lg:col-span-7 space-y-12">
             <div className="p-10 rounded-[3rem] bg-gradient-to-br from-background-primary to-background-secondary border border-border shadow-soft">
                <DailyGoals profile={profile} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               <div className="p-8 rounded-4xl bg-background-primary border border-border shadow-soft group hover:border-accent-primary/40 transition-all">
-                  <div className="flex justify-between items-start mb-6">
-                     <div className="h-12 w-12 rounded-2xl bg-accent-primary/10 text-accent-primary flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <TrendingUp size={24} />
-                     </div>
-                     <ArrowUpRight size={14} className="text-text-muted opacity-30" />
-                  </div>
-                  <h4 className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Consistency Rank</h4>
-                  <p className="text-2xl font-black text-text-primary tracking-tight italic">Elite Protocol</p>
+               <div className="p-8 rounded-4xl bg-background-primary border border-border shadow-soft group hover:border-accent-primary/40 transition-all text-center">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Consistency</h4>
+                  <p className="text-2xl font-black text-text-primary tracking-tight italic">Top Performer</p>
                </div>
                
-               <div className="p-8 rounded-4xl bg-background-primary border border-border shadow-soft group hover:border-accent-secondary/40 transition-all">
-                  <div className="flex justify-between items-start mb-6">
-                     <div className="h-12 w-12 rounded-2xl bg-accent-secondary/10 text-accent-secondary flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Zap size={24} />
-                     </div>
-                     <ArrowUpRight size={14} className="text-text-muted opacity-30" />
-                  </div>
-                  <h4 className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">High Energy State</h4>
-                  <p className="text-2xl font-black text-text-primary tracking-tight italic">Active Pulse</p>
+               <div className="p-8 rounded-4xl bg-background-primary border border-border shadow-soft group hover:border-accent-secondary/40 transition-all text-center">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Status</h4>
+                  <p className="text-2xl font-black text-text-primary tracking-tight italic">Active Streak</p>
                </div>
             </div>
           </div>
@@ -91,12 +87,12 @@ function Dashboard({ subject, topics, allTopics = [], profile, onStatusChange, o
           {/* Right: Task Queue */}
           <div className="lg:col-span-5 space-y-8">
              <div className="flex items-center justify-between px-2">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted">Critical Queue</h3>
-                <span className="text-[9px] font-black px-2 py-0.5 rounded bg-background-tertiary border border-border text-text-muted uppercase">Top 5 Units</span>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted">Action Items</h3>
+                <span className="text-[9px] font-black px-2 py-0.5 rounded bg-background-tertiary border border-border text-text-muted uppercase">Top 5</span>
              </div>
 
              <div className="space-y-4">
-                {globalQueue.length > 0 ? globalQueue.map((topic, i) => (
+                {actionItems.length > 0 ? actionItems.map((topic, i) => (
                   <motion.div 
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -105,35 +101,56 @@ function Dashboard({ subject, topics, allTopics = [], profile, onStatusChange, o
                     className="group p-6 bg-background-primary border border-border rounded-3xl hover:border-accent-primary/40 hover:shadow-soft transition-all cursor-pointer flex items-center justify-between gap-4"
                   >
                     <div className="flex items-center gap-5 min-w-0">
-                       <div className={cn(
-                         "h-10 w-10 min-w-[40px] rounded-xl flex items-center justify-center transition-all",
-                         topic.priority === 'High' ? "bg-red-500/10 text-red-500" : topic.priority === 'Medium' ? "bg-amber-500/10 text-amber-500" : "bg-emerald-500/10 text-emerald-500"
-                       )}>
-                          <Zap size={18} fill="currentColor" className="opacity-40" />
-                       </div>
+                       <button 
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           const nextStatus = {
+                             'Not Started': 'In Progress',
+                             'In Progress': 'Completed',
+                             'Completed': 'Not Started'
+                           };
+                           onStatusChange(topic.id, nextStatus[topic.status]);
+                         }}
+                         className={cn(
+                           "h-10 w-10 min-w-[40px] rounded-xl border-2 flex items-center justify-center transition-all shadow-sm",
+                           topic.status === 'Completed' 
+                             ? "bg-success/10 border-success text-success" 
+                             : topic.status === 'In Progress'
+                               ? "border-accent-primary text-accent-primary bg-accent-primary/5"
+                               : "bg-background-tertiary border-border text-text-muted hover:border-accent-primary"
+                         )}
+                       >
+                         {topic.status === 'Completed' ? (
+                           <Check size={18} strokeWidth={4} />
+                         ) : topic.status === 'In Progress' ? (
+                           <div className="h-2 w-2 rounded-full bg-accent-primary animate-pulse" />
+                         ) : (
+                           <Circle size={18} className="opacity-40" />
+                         )}
+                       </button>
                        <div className="min-w-0">
                           <h5 className="text-sm font-black text-text-primary tracking-tight truncate uppercase italic leading-none mb-1 group-hover:text-accent-primary transition-colors">{topic.title}</h5>
-                          <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest opacity-60">Priority: {topic.priority}</p>
+                          <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest opacity-60 last:italic">{topic.priority} Priority</p>
                        </div>
                     </div>
                     <ArrowRight size={14} className="text-text-muted opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all shrink-0" />
                   </motion.div>
                 )) : (
                   <div className="p-12 text-center rounded-4xl border border-dashed border-border opacity-50">
-                     <p className="text-sm font-bold text-text-muted italic">System Protocol Clear. No active missions.</p>
+                     <p className="text-sm font-bold text-text-muted italic">All caught up! Zero items in queue.</p>
                   </div>
                 )}
              </div>
 
              <div className="p-8 rounded-[2.5rem] bg-indigo-500/5 border border-indigo-500/10 space-y-6">
                 <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500">
-                   <span>Projected Mastery</span>
+                   <span>Projected Growth</span>
                    <span>{(globalProgress * 1.2).toFixed(0)}%</span>
                 </div>
                 <div className="h-1 w-full bg-background-primary rounded-full overflow-hidden">
                    <div className="h-full w-[45%] bg-indigo-500 rounded-full" />
                 </div>
-                <p className="text-xs text-text-muted font-medium italic opacity-60">Based on your current session volume and consistency rank.</p>
+                <p className="text-xs text-text-muted font-medium italic opacity-60">Estimation based on current momentum.</p>
              </div>
           </div>
         </div>
@@ -155,15 +172,15 @@ function Dashboard({ subject, topics, allTopics = [], profile, onStatusChange, o
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
           <div className="flex items-center gap-3 mb-3">
              <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
-             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-success">Live Track Active</span>
+             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-success">Tracker Active</span>
           </div>
           <h1 className="text-5xl font-black text-text-primary tracking-tighter mb-2 flex items-center gap-4">
             {subject.name}
             <div className="h-10 w-10 flex items-center justify-center rounded-2xl bg-accent-primary/5 text-accent-primary border border-accent-primary/10">
-               <ArrowUpRight size={20} />
+               <TrendingUp size={20} />
             </div>
           </h1>
-          <p className="text-lg text-text-muted font-medium">Mastering excellence through consistent action.</p>
+          <p className="text-lg text-text-muted font-medium">Progress overview and topic management.</p>
         </motion.div>
 
         <div className="flex items-center gap-3">
@@ -262,6 +279,7 @@ function Dashboard({ subject, topics, allTopics = [], profile, onStatusChange, o
             <AnimatePresence>
               {showAddTopic && (
                 <motion.div 
+                  ref={addTopicRef}
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}

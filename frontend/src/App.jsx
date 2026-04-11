@@ -71,6 +71,8 @@ function App() {
   };
 
   const markAllRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  const clearNotifications = () => setNotifications([]);
+  const deleteNotification = (id) => setNotifications(prev => prev.filter(n => n.id !== id));
 
   // ─── Folder handlers ───────────────────────────────────────────────────
   const handleAddFolder = async (data) => {
@@ -243,6 +245,8 @@ function App() {
         profile={profile}
         notifications={notifications}
         onMarkAllRead={markAllRead}
+        onClearNotifications={clearNotifications}
+        onDeleteNotification={deleteNotification}
         onOpenProfile={(tab = 'Account') => setShowProfile(tab)}
         onToggleTheme={handleToggleTheme}
         searchTerm={globalSearch}

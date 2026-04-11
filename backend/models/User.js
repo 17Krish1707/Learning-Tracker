@@ -23,6 +23,7 @@ const userSchema = new mongoose.Schema(
       minlength: [6, 'Password must be at least 6 characters'],
     },
     avatar: { type: String, default: '🎓' },
+    picture: { type: String, default: '' },
     studyGoal: { type: Number, default: 120 }, // minutes/day
     weeklyTarget: { type: Number, default: 5 },
     lastStudiedAt: { type: Date, default: null },

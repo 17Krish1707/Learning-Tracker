@@ -83,8 +83,8 @@ function Statistics() {
     <div className="max-w-7xl mx-auto space-y-10 py-6 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-5xl font-black text-text-primary tracking-tighter mb-2">Academic Analytics.</h1>
-          <p className="text-lg text-text-muted font-medium">Real-time insights from your study sessions.</p>
+          <h1 className="text-5xl font-black text-text-primary tracking-tighter mb-2">Growth Stats.</h1>
+          <p className="text-lg text-text-muted font-medium">Insights from your latest study sessions.</p>
         </div>
         <button onClick={load} className="flex items-center gap-2 px-4 py-2 bg-background-tertiary rounded-2xl border border-border text-sm font-bold text-text-secondary hover:text-accent-primary transition-colors">
           <RefreshCw size={16} /> Refresh
@@ -121,8 +121,8 @@ function Statistics() {
         >
           <div className="flex items-center justify-between mb-10">
             <div>
-              <h3 className="text-2xl font-black text-text-primary tracking-tight">Study Intensity</h3>
-              <p className="text-sm text-text-muted">Hours logged per day — last 7 days.</p>
+              <h3 className="text-2xl font-black text-text-primary tracking-tight">Time Logged</h3>
+              <p className="text-sm text-text-muted">Study hours per day — last 7 days.</p>
             </div>
           </div>
           <div className="h-[300px] w-full">
@@ -160,8 +160,8 @@ function Statistics() {
           className="lg:col-span-4 p-10 rounded-[3rem] bg-background-primary border border-border shadow-premium flex flex-col"
         >
           <div className="mb-8">
-            <h3 className="text-2xl font-black text-text-primary tracking-tight">Focus Distro</h3>
-            <p className="text-sm text-text-muted">Time allocation by subject.</p>
+            <h3 className="text-2xl font-black text-text-primary tracking-tight">Time Split</h3>
+            <p className="text-sm text-text-muted">Hours per subject.</p>
           </div>
           {pieData.length > 0 ? (
             <>
