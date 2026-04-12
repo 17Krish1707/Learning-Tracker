@@ -1,6 +1,6 @@
 const express = require('express');
 const router  = express.Router();
-const { createSession, getSessionsByTopic, getAllSessions, deleteSession } = require('../controllers/sessionController');
+const { createSession, getSessionsByTopic, getAllSessions, deleteSession, getTodayStats } = require('../controllers/sessionController');
 const { protect } = require('../middleware/auth');
 
 router.use(protect);
@@ -11,6 +11,7 @@ router.use(protect);
 // DELETE /api/sessions/:id   → delete a session
 
 router.get('/',           getAllSessions);
+router.get('/stats/today', getTodayStats);
 router.get('/:topicId',   getSessionsByTopic);
 router.post('/',          createSession);
 router.delete('/:id',     deleteSession);

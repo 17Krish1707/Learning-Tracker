@@ -29,6 +29,22 @@ async function request(method, path, body) {
   return data;
 }
 
+export async function uploadFile(file) {
+  const token = getToken();
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await fetch(`${BASE}/api/upload`, {
+    method: 'POST',
+    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+    body: formData,
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Upload failed');
+  return data;
+}
+
 // ─── Auth ──────────────────────────────────────────────────────────────────
 export const authAPI = {
   googleLogin: (accessToken) => request('POST', '/api/auth/google', { accessToken }),
@@ -66,6 +82,7 @@ export const sessionsAPI = {
   getByTopic:    (topicId)     => request('GET',    `/api/sessions/${topicId}`),
   getAll:        ()            => request('GET',    '/api/sessions'),
   remove:        (id)          => request('DELETE', `/api/sessions/${id}`),
+  getTodayStats: ()            => request('GET',    '/api/sessions/stats/today'),
 };
 
 // ─── Stats ─────────────────────────────────────────────────────────────────

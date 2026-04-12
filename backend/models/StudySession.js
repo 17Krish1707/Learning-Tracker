@@ -19,10 +19,10 @@ const studySessionSchema = new mongoose.Schema(
       default: Date.now,
     },
     duration: {
-      type: Number, // in hours
+      type: Number, // in minutes
       required: [true, 'Duration is required'],
-      min: [0.01, 'Duration must be at least 0.01 hours'],
-      max: [24, 'Duration cannot exceed 24 hours'],
+      min: [1, 'Duration must be at least 1 minute'],
+      max: [1440, 'Duration cannot exceed 1440 minutes (24 hours)'],
     },
     notes: { type: String, default: '', maxlength: 500 },
   },

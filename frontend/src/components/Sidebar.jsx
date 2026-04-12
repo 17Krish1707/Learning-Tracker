@@ -147,28 +147,28 @@ function Sidebar({
       )}>
         <div className="p-10 space-y-12 flex-1 overflow-y-auto custom-scrollbar">
           <div className="flex items-center justify-between lg:hidden mb-12">
-            <span className="text-[11px] font-black uppercase tracking-[0.5em] text-accent-primary opacity-60">System Menu</span>
+            <span className="text-[11px] font-black uppercase tracking-[0.5em] text-accent-primary opacity-60">StudyTrack</span>
             <button onClick={onClose} className="p-3 rounded-2xl bg-background-tertiary text-text-muted hover:text-text-primary transition-all shadow-soft"><Icons.X size={20} /></button>
           </div>
 
           <div className="space-y-4">
-            <div className="px-5 text-[10px] font-black uppercase tracking-[0.4em] text-text-muted mb-6 opacity-30 italic">Tactical Overview</div>
+            <div className="px-5 text-[10px] font-black uppercase tracking-[0.4em] text-text-muted mb-6 opacity-30 italic">Navigation</div>
             <div className="space-y-2">
               <NavItem
                 icon={Icons.LayoutDashboard}
-                label="Core Status"
+                label="Dashboard"
                 active={activeView === 'dashboard'}
                 onClick={() => { setActiveSubjectId(null); setActiveView('dashboard'); onClose(); }}
               />
               <NavItem
                 icon={Icons.BarChart3}
-                label="Growth Engine"
+                label="Stats"
                 active={activeView === 'stats'}
                 onClick={() => { setActiveView('stats'); onClose(); }}
               />
               <NavItem
                 icon={Icons.Clock}
-                label="Temporal Log"
+                label="History"
                 active={activeView === 'history'}
                 onClick={() => { setActiveView('history'); onClose(); }}
               />
@@ -177,7 +177,7 @@ function Sidebar({
 
           <div className="space-y-8">
             <div className="flex items-center justify-between px-5">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-text-muted opacity-30 italic">Intelligence Bank</h3>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-text-muted opacity-30 italic">Subjects</h3>
               <div className="flex gap-2">
                 <button onClick={() => handleOpenModal('addFolder')} className="h-8 w-8 rounded-xl flex items-center justify-center text-text-muted hover:bg-accent-primary/10 hover:text-accent-primary transition-all border border-transparent hover:border-accent-primary/20">
                   <Icons.FolderPlus size={16} />
@@ -237,7 +237,7 @@ function Sidebar({
                   onDrop={(e) => handleDrop(e, null)}
                 >
                   <div className="flex items-center justify-between px-4 py-2">
-                    <div className="text-[9px] font-black text-text-muted uppercase tracking-[0.3em] opacity-30 italic">Raw Entities</div>
+                    <div className="text-[9px] font-black text-text-muted uppercase tracking-[0.3em] opacity-30 italic">Untracked</div>
                     <Icons.ArrowDownLeft size={10} className="text-accent-primary opacity-0 group-hover/uncat:opacity-100 transition-opacity" />
                   </div>
                   {uncategorized.map(subject => (
@@ -263,12 +263,12 @@ function Sidebar({
           <div className="rounded-[2.5rem] bg-gradient-to-br from-accent-primary/10 via-accent-secondary/5 to-transparent p-8 border border-accent-primary/10 relative overflow-hidden group shadow-soft backdrop-blur-md">
             <div className="absolute -right-8 -top-8 h-32 w-32 bg-accent-primary/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
             <div className="flex items-center justify-between mb-4">
-               <p className="text-[11px] font-black text-accent-primary uppercase tracking-[0.3em]">Operational Target</p>
+               <p className="text-[11px] font-black text-accent-primary uppercase tracking-[0.3em]">Course Progress</p>
                <Icons.Zap size={14} className="text-accent-primary animate-pulse" />
             </div>
             <div className="flex items-end justify-between mb-4">
               <span className="text-4xl font-black text-text-primary tracking-tighter">{progressPercent}<span className="text-xl opacity-30 ml-1">%</span></span>
-              <span className="text-[10px] text-text-muted font-bold mb-1 italic opacity-60">Calculated Projection</span>
+              <span className="text-[10px] text-text-muted font-bold mb-1 italic opacity-60">Completion Rate</span>
             </div>
             <div className="h-2 w-full rounded-full bg-background-secondary/50 border border-white/5 overflow-hidden p-0.5">
               <motion.div
@@ -429,7 +429,7 @@ function Sidebar({
                       </div>
 
                       <div className="space-y-4">
-                        <label className="text-[11px] font-black text-text-muted uppercase tracking-[0.25em] px-1 opacity-50 italic">Strategic Mapping</label>
+                        <label className="text-[11px] font-black text-text-muted uppercase tracking-[0.25em] px-1 opacity-50 italic">Choose Icon</label>
                         <div className="grid grid-cols-5 gap-3">
                         {ICON_OPTIONS.map(name => {
                             const IconComp = Icons[name];
@@ -451,7 +451,7 @@ function Sidebar({
                       </div>
 
                       <div className="space-y-4">
-                        <label className="text-[11px] font-black text-text-muted uppercase tracking-[0.25em] px-1 opacity-50 italic">Neural Color Token</label>
+                        <label className="text-[11px] font-black text-text-muted uppercase tracking-[0.25em] px-1 opacity-50 italic">Choose Color</label>
                         <div className="flex flex-wrap gap-3">
                           {COLOR_OPTIONS.map(color => (
                             <button

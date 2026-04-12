@@ -3,7 +3,7 @@ import { Target, CheckCircle2, Circle, Plus, Trash2, Zap, ArrowRight, MoreHorizo
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../utils/cn';
 
-function DailyGoals({ profile }) {
+function DailyGoals({ profile, todayStats }) {
   const [tasks, setTasks] = useState(() => {
     const saved = localStorage.getItem('daily_tasks');
     return saved ? JSON.parse(saved) : [
@@ -33,7 +33,10 @@ function DailyGoals({ profile }) {
   };
 
   const completedCount = tasks.filter(t => t.completed).length;
-  const progressPercent = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
+  const checklistProgress = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
+  
+  const studyGoal = profile?.studyGoal || 120;
+  const timeProgress = Math.min(100, Math.round((todayStats / studyGoal) * 100));
 
   return (
     <div className="space-y-6">
@@ -44,7 +47,7 @@ function DailyGoals({ profile }) {
         </div>
         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-accent-primary/5 border border-accent-primary/10">
            <Zap size={12} className="text-accent-primary" />
-           <span className="text-[10px] font-black text-accent-primary uppercase tracking-widest">{progressPercent}% Done</span>
+           <span className="text-[10px] font-black text-accent-primary uppercase tracking-widest">{checklistProgress}% Done</span>
         </div>
       </div>
 
@@ -117,7 +120,9 @@ function DailyGoals({ profile }) {
             <div className="flex justify-between items-end">
                <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-1">Time Goal</p>
-                  <h4 className="text-2xl font-black text-text-primary tracking-tighter">{profile?.studyGoal || 120}<span className="text-xs text-text-muted ml-1 lowercase">min</span></h4>
+                  <h4 className="text-2xl font-black text-text-primary tracking-tighter">
+                     {todayStats}<span className="text-xs text-text-muted mx-1">/</span>{studyGoal}<span className="text-xs text-text-muted ml-0.5 lowercase">min</span>
+                   </h4>
                </div>
                <div className="text-right">
                   <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-1">Target</p>
@@ -127,7 +132,7 @@ function DailyGoals({ profile }) {
             <div className="h-1.5 w-full bg-background-primary/50 rounded-full overflow-hidden">
                <motion.div 
                  initial={{ width: 0 }}
-                 animate={{ width: `${progressPercent}%` }}
+                 animate={{ width: `${timeProgress}%` }}
                  className="h-full bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full shadow-[0_0_10px_rgba(79,70,229,0.3)]"
                />
             </div>

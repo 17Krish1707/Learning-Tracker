@@ -30,9 +30,14 @@ const topicSchema = new mongoose.Schema(
       enum: ['Low', 'Medium', 'High'],
       default: 'Medium',
     },
-    hoursSpent: { type: Number, default: 0, min: 0 },
+    minutesSpent: { type: Number, default: 0, min: 0 },
     deadline: { type: Date, default: null },
     notes: { type: String, default: '', maxlength: 50000 },
+    resources: [{
+      title: { type: String, required: true },
+      url: { type: String, required: true },
+      type: { type: String, enum: ['PDF', 'Image', 'Link', 'Document'], default: 'Link' }
+    }],
     completedAt: { type: Date, default: null },
   },
   { timestamps: true }

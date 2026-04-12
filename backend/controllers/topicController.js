@@ -52,7 +52,7 @@ const getTopics = async (req, res) => {
 // @route   POST /api/topics
 const createTopic = async (req, res) => {
   try {
-    const { subjectId, title, status, priority, deadline, notes } = req.body;
+    const { subjectId, title, status, priority, deadline, notes, resources } = req.body;
 
     if (!subjectId || !title) {
       return res.status(400).json({ success: false, message: 'subjectId and title are required.' });
@@ -70,6 +70,8 @@ const createTopic = async (req, res) => {
       priority: priority || 'Medium',
       deadline: deadline || null,
       notes: notes || '',
+      resources: resources || [],
+      minutesSpent: 0,
     });
 
     res.status(201).json({ success: true, topic });
@@ -85,12 +87,14 @@ const updateTopic = async (req, res) => {
     const topic = await Topic.findOne({ _id: req.params.id, userId: req.user._id });
     if (!topic) return res.status(404).json({ success: false, message: 'Topic not found.' });
 
-    const { title, status, priority, deadline, notes } = req.body;
+    const { title, status, priority, deadline, notes, resources, minutesSpent } = req.body;
     if (title !== undefined) topic.title = title;
     if (status !== undefined) topic.status = status;
     if (priority !== undefined) topic.priority = priority;
     if (deadline !== undefined) topic.deadline = deadline || null;
     if (notes !== undefined) topic.notes = notes;
+    if (resources !== undefined) topic.resources = resources;
+    if (minutesSpent !== undefined) topic.minutesSpent = minutesSpent;
 
     await topic.save();
     res.json({ success: true, topic });

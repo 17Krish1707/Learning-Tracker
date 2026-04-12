@@ -98,8 +98,8 @@ function History() {
     );
   }
 
-  const totalHours = sessions.reduce((acc, s) => acc + (s.duration || 0), 0);
-  const avgSession  = sessions.length > 0 ? totalHours / sessions.length : 0;
+  const totalMinutes = sessions.reduce((acc, s) => acc + (s.duration || 0), 0);
+  const avgSession  = sessions.length > 0 ? totalMinutes / sessions.length : 0;
   const maxSession  = sessions.length > 0 ? Math.max(...sessions.map(s => s.duration || 0)) : 0;
 
   return (
@@ -230,7 +230,7 @@ function History() {
             </h3>
             <div className="space-y-4">
               {[
-                { label: 'Total Hours',    value: `${(totalHours / 60).toFixed(1)}h` },
+                { label: 'Total Hours',    value: `${(totalMinutes / 60).toFixed(1)}h` },
                 { label: 'Longest Session', value: formatDuration(maxSession) },
                 { label: 'Avg / Session',  value: formatDuration(Math.round(avgSession)) },
               ].map((stat, idx) => (

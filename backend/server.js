@@ -1,10 +1,13 @@
 const path = require('path');
 const dotenv = require('dotenv');
+const multer = require('multer');
+const fs     = require('fs');
 
 // Load environment variables
 dotenv.config({ path: path.join(__dirname, '.env') });
 
 const express = require('express');
+const app = express();
 const mongoose = require('mongoose');
 const cors = require('cors');
 // ... rest of your requires
@@ -15,8 +18,21 @@ const sessionRoutes = require('./routes/sessions');
 const statsRoutes = require('./routes/stats');
 const folderRoutes = require('./routes/folders');
 
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
 
-const app = express();
+// Multer Config
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
+  }
+});
+const upload = multer({ storage });
 
 // ─── CORS ────────────────────────────────────────────────────────────────────
 app.use(cors({
@@ -67,6 +83,14 @@ app.use('/api/topics',   topicRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/stats',    statsRoutes);
 app.use('/api/folders',  folderRoutes);
+
+app.post('/api/upload', upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+  const fileUrl = `/uploads/${req.file.filename}`;
+  res.json({ url: fileUrl, name: req.file.originalname, type: req.file.mimetype });
+});
+
+app.use('/uploads', express.static(uploadDir));
 
 
 // Health check

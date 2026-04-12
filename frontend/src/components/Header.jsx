@@ -56,7 +56,7 @@ function Header({
               <Layers size={24} strokeWidth={2.5} />
             </div>
             <div className="flex flex-col">
-               <span className="text-2xl lg:text-3xl font-black tracking-tighter uppercase leading-none bg-clip-text text-transparent bg-gradient-to-r from-accent-primary via-fuchsia-500 to-accent-highlight animate-gradient-x bg-[length:200%_auto]">StudyTrack</span>
+               <span className="text-2xl lg:text-3xl font-black tracking-tighter leading-none bg-clip-text text-transparent bg-gradient-to-r from-accent-primary via-fuchsia-500 to-accent-highlight animate-gradient-x bg-[length:200%_auto]">StudyTrack</span>
                <span className="text-[9px] font-black uppercase tracking-[0.5em] text-text-muted mt-1 opacity-60">Learning Manager</span>
             </div>
           </div>

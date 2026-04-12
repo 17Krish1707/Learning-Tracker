@@ -21,15 +21,15 @@ function App() {
   const { user, loading: authLoading } = useAuth();
 
   const {
-    folders, subjects, topics, streak, loading: dataLoading,
+    folders, subjects, topics, streak, todayStats, loading: dataLoading,
     loadTopics,
     addFolder, editFolder, deleteFolder,
     addSubject, editSubject, deleteSubject,
     addTopic, editTopic, deleteTopic, logTime,
   } = useData(user);
 
-  const [activeSubjectId, setActiveSubjectId] = useState(null);
-  const [activeView, setActiveView]           = useState('dashboard');
+  const [activeSubjectId, setActiveSubjectId] = useState(() => localStorage.getItem('activeSubjectId'));
+  const [activeView, setActiveView]           = useState(() => localStorage.getItem('activeView') || 'dashboard');
   const [profile, setProfile]                 = useState(defaultProfile);
   const [showProfile, setShowProfile]         = useState(false);
   const [isSidebarOpen, setIsSidebarOpen]     = useState(false);
@@ -59,6 +59,13 @@ function App() {
       document.documentElement.classList.remove('dark');
     }
   }, [profile.theme]);
+ 
+  // ── Persistence ────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (activeSubjectId) localStorage.setItem('activeSubjectId', activeSubjectId);
+    else localStorage.removeItem('activeSubjectId');
+    localStorage.setItem('activeView', activeView);
+  }, [activeSubjectId, activeView]);
 
   // ── When a subject becomes active, lazy-load its topics ────────────────
   useEffect(() => {
@@ -171,6 +178,12 @@ function App() {
 
   const handleToggleTheme = () => {
     setProfile(prev => ({ ...prev, theme: prev.theme === 'dark' ? 'light' : 'dark' }));
+  };
+ 
+  const handleNavigate = (subjectId) => {
+    setActiveSubjectId(subjectId);
+    setActiveView('subject');
+    setIsSidebarOpen(false);
   };
 
   // ── Derived data ───────────────────────────────────────────────────────
@@ -304,8 +317,8 @@ function App() {
                     </div>
                   </div>
                   <div className="space-y-2 text-center">
-                    <p className="text-[12px] font-black text-text-primary uppercase tracking-[0.5em] animate-pulse">Synchronizing Core</p>
-                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest opacity-60">Initializing temporal databases</p>
+                    <p className="text-[12px] font-black text-text-primary uppercase tracking-[0.5em] animate-pulse">Updating System</p>
+                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest opacity-60">Preparing your Workspace</p>
                   </div>
                 </div>
               </motion.div>
@@ -332,6 +345,8 @@ function App() {
                     onEditTopic={handleEditTopic}
                     onLogTime={handleLogTime}
                     onDeleteTopic={handleDeleteTopic}
+                    onNavigate={handleNavigate}
+                    todayStats={todayStats}
                   />
                 )}
               </motion.div>

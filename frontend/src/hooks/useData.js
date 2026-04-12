@@ -9,17 +9,19 @@ export function useData(user) {
   const [subjects, setSubjects]       = useState([]);
   const [topics, setTopics]           = useState({});   // { [subjectId]: [...] }
   const [streak, setStreak]           = useState(0);
+  const [todayStats, setTodayStats]   = useState(0);
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState(null);
 
   // ── Bootstrap: load folders + subjects when user signs in ──────────────
   useEffect(() => {
     if (!user) {
-      setFolders([]); setSubjects([]); setTopics({}); setStreak(0);
+      setFolders([]); setSubjects([]); setTopics({}); setStreak(0); setTodayStats(0);
       return;
     }
     if (user.streakDays !== undefined) setStreak(user.streakDays);
     loadFoldersAndSubjects();
+    loadTodayStats();
   }, [user]);
 
   const loadFoldersAndSubjects = async () => {
@@ -119,8 +121,16 @@ export function useData(user) {
     });
     // Backend updates hoursSpent on the topic — re-fetch the topic list
     await loadTopics(subjectId);
+    await loadTodayStats();
     if (res.streakDays !== undefined) setStreak(res.streakDays);
     return res;
+  };
+
+  const loadTodayStats = async () => {
+    try {
+      const res = await sessionsAPI.getTodayStats();
+      setTodayStats(res.totalMinutes || 0);
+    } catch (e) { console.error("Failed to load today stats", e); }
   };
 
   return {
@@ -129,6 +139,7 @@ export function useData(user) {
     addFolder, editFolder, deleteFolder,
     addSubject, editSubject, deleteSubject,
     addTopic, editTopic, deleteTopic, logTime,
+    todayStats,
     reload: loadFoldersAndSubjects,
   };
 }
@@ -145,7 +156,7 @@ function normalizeTopic(t) {
   return {
     ...t,
     id:          t._id || t.id,
-    timeSpent:   Math.round((t.hoursSpent || 0) * 60), // convert hours → minutes for UI
+    timeSpent:   t.minutesSpent || 0,
     subjectId:   t.subjectId?._id || t.subjectId,
   };
 }

@@ -19,20 +19,20 @@ const getStats = async (req, res) => {
     const totalTopics = topics.length;
     const completedTopics = topics.filter((t) => t.status === 'Completed').length;
     const inProgressTopics = topics.filter((t) => t.status === 'In Progress').length;
-    const totalHours = parseFloat(topics.reduce((sum, t) => sum + (t.hoursSpent || 0), 0).toFixed(2));
+    const totalHours = parseFloat((topics.reduce((sum, t) => sum + (t.minutesSpent || 0), 0) / 60).toFixed(2));
     const progressPercent = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
 
     // Hours studied this week
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     const weekSessions = sessions.filter((s) => new Date(s.date) >= weekAgo);
-    const hoursThisWeek = parseFloat(weekSessions.reduce((sum, s) => sum + s.duration, 0).toFixed(2));
+    const hoursThisWeek = parseFloat((weekSessions.reduce((sum, s) => sum + s.duration, 0) / 60).toFixed(2));
 
     // Hours studied today
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     const todaySessions = sessions.filter((s) => new Date(s.date) >= todayStart);
-    const hoursToday = parseFloat(todaySessions.reduce((sum, s) => sum + s.duration, 0).toFixed(2));
+    const hoursToday = parseFloat((todaySessions.reduce((sum, s) => sum + s.duration, 0) / 60).toFixed(2));
 
     // Upcoming deadlines (next 7 days)
     const nextWeek = new Date();
@@ -51,7 +51,7 @@ const getStats = async (req, res) => {
     const dailyActivity = {};
     recentSessions.forEach((s) => {
       const day = new Date(s.date).toISOString().split('T')[0];
-      dailyActivity[day] = parseFloat(((dailyActivity[day] || 0) + s.duration).toFixed(2));
+      dailyActivity[day] = parseFloat(((dailyActivity[day] || 0) + s.duration / 60).toFixed(2));
     });
 
     res.json({
@@ -89,7 +89,7 @@ const getSubjectStats = async (req, res) => {
         const topics = await Topic.find({ subjectId: subject._id });
         const total = topics.length;
         const completed = topics.filter((t) => t.status === 'Completed').length;
-        const hours = parseFloat(topics.reduce((sum, t) => sum + (t.hoursSpent || 0), 0).toFixed(2));
+        const hours = parseFloat((topics.reduce((sum, t) => sum + (t.minutesSpent || 0), 0) / 60).toFixed(2));
 
         return {
           subjectId: subject._id,

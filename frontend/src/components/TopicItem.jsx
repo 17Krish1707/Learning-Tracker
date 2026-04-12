@@ -2,11 +2,13 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   Calendar, Trash2, Circle, Check, Timer, Zap,
   Bold, Italic, Underline, List, ListOrdered,
-  Code, Heading2, Type, Loader2, ChevronDown, AlignLeft
+  Code, Heading2, Type, Loader2, ChevronDown, AlignLeft,
+  Link as LinkIcon, FileText, Image, Paperclip, Plus, X, ExternalLink, Upload
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import StudyLogger from './StudyLogger';
 import { cn } from '../utils/cn';
+import { uploadFile } from '../services/api';
 
 function useDebounce(fn, delay) {
   const timer = useRef(null);
@@ -34,7 +36,7 @@ function ToolBtn({ onClick, title, active, children }) {
   );
 }
 
-function RichToolbar({ editorRef }) {
+function RichToolbar({ editorRef, onUpload }) {
   const [fmt, setFmt] = useState({});
   const update = () => setFmt({
     bold:      document.queryCommandState('bold'),
@@ -63,6 +65,11 @@ function RichToolbar({ editorRef }) {
       <ToolBtn onClick={() => exec('insertOrderedList')}   title="Numbered list" active={fmt.ol}> <ListOrdered size={12} /></ToolBtn>
       <Div />
       <ToolBtn onClick={() => exec('formatBlock', 'pre')} title="Code block"> <Code size={12} /></ToolBtn>
+      <Div />
+      <ToolBtn onClick={() => { const url = prompt('Enter URL:'); if(url) exec('createLink', url); }} title="Add Link"> <LinkIcon size={12} /></ToolBtn>
+      {onUpload && (
+        <ToolBtn onClick={onUpload} title="Upload Image/File"> <Upload size={12} /></ToolBtn>
+      )}
     </div>
   );
 }
@@ -85,6 +92,10 @@ function TopicItem({ topic, index, onStatusChange, onLogTime, onDeleteTopic, onE
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [notesOpen,      setNotesOpen]      = useState(false);
   const [saveStatus,     setSaveStatus]     = useState('idle');
+  const [showResForm,    setShowResForm]    = useState(false);
+  const [resData,        setResData]        = useState({ title: '', url: '', type: 'Link' });
+  const [isUploading,    setIsUploading]    = useState(false);
+  const fileInputRef = useRef(null);
   const editorRef = useRef(null);
   const hasNotes  = Boolean(topic.notes?.trim());
 
@@ -127,6 +138,63 @@ function TopicItem({ topic, index, onStatusChange, onLogTime, onDeleteTopic, onE
     if (editorRef.current) editorRef.current.innerHTML = '';
     await onEditTopic(topic.id, { notes: '' });
     setSaveStatus('idle');
+  };
+
+  const handleAddResource = async (e) => {
+    e.preventDefault();
+    if (!resData.title || !resData.url) return;
+    const updatedRes = [...(topic.resources || []), resData];
+    await onEditTopic(topic.id, { resources: updatedRes });
+    setResData({ title: '', url: '', type: 'Link' });
+    setShowResForm(false);
+  };
+
+  const handleDeleteResource = async (idx) => {
+    const updatedRes = (topic.resources || []).filter((_, i) => i !== idx);
+    await onEditTopic(topic.id, { resources: updatedRes });
+  };
+
+  const processFile = async (file) => {
+    setIsUploading(true);
+    try {
+      const res = await uploadFile(file);
+      const isImage = file.type.startsWith('image/');
+      
+      if (isImage) {
+        // Insert directly into editor
+        exec('insertHTML', `<img src="${res.url}" alt="${res.name}" style="max-width: 100%; border-radius: 1rem; margin: 1rem 0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);" />`);
+        await onEditTopic(topic.id, { notes: editorRef.current.innerHTML });
+      } else {
+        // Add as resource
+        const type = file.type.includes('pdf') ? 'PDF' : 'Document';
+        const updatedRes = [...(topic.resources || []), { title: res.name, url: res.url, type }];
+        await onEditTopic(topic.id, { resources: updatedRes });
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Upload failed: ' + e.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handlePaste = async (e) => {
+    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+    for (let item of items) {
+      if (item.kind === 'file') {
+        e.preventDefault();
+        const file = item.getAsFile();
+        await processFile(file);
+      }
+    }
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      await processFile(file);
+      e.target.value = ''; // reset
+    }
   };
 
   return (
@@ -276,18 +344,18 @@ function TopicItem({ topic, index, onStatusChange, onLogTime, onDeleteTopic, onE
                   className="overflow-hidden"
                 >
                   <div className="rounded-2xl border border-border/60 bg-background-secondary/30 overflow-hidden shadow-sm">
-                    <RichToolbar editorRef={editorRef} />
+                    <RichToolbar editorRef={editorRef} onUpload={() => fileInputRef.current?.click()} />
 
                     <div
                       ref={editorRef}
                       contentEditable
                       suppressContentEditableWarning
                       onInput={handleEditorInput}
+                      onPaste={handlePaste}
                       data-placeholder="Write notes, formulas, code snippets…"
                       className="notes-topic-editor min-h-[160px] max-h-[500px] overflow-y-auto p-5 text-[14px] leading-7 text-text-primary outline-none custom-scrollbar"
                     />
 
-                    {/* Footer */}
                     <div className="flex items-center justify-between px-4 py-2 border-t border-border/40 bg-background-tertiary/20">
                       <div className="flex items-center gap-2">
                         <AnimatePresence mode="wait">
@@ -329,6 +397,103 @@ function TopicItem({ topic, index, onStatusChange, onLogTime, onDeleteTopic, onE
                   <p className="text-[10px] text-text-muted/40 font-semibold mt-2 ml-1">
                     Ctrl+B bold · Ctrl+I italic · Ctrl+U underline · Auto-saves as you type
                   </p>
+
+                  {/* Resources / Attachments */}
+                  <div className="mt-8 pt-8 border-t border-border/40">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-3">
+                        <Paperclip size={16} className="text-accent-primary opacity-60" />
+                        <h5 className="text-[11px] font-black uppercase tracking-[0.3em] text-text-muted">Files & Attachments</h5>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={isUploading}
+                          className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-text-muted hover:text-accent-primary transition-all px-4 py-1.5 rounded-xl bg-background-tertiary border border-border"
+                        >
+                          {isUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />} 
+                          {isUploading ? 'Uploading...' : 'Upload File'}
+                        </button>
+                        <button 
+                          onClick={() => setShowResForm(!showResForm)}
+                          className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-accent-primary hover:opacity-70 transition-all px-4 py-1.5 rounded-xl bg-accent-primary/5 border border-accent-primary/10"
+                        >
+                          {showResForm ? <X size={12} /> : <Plus size={12} />} {showResForm ? 'Cancel' : 'Add Attachment'}
+                        </button>
+                      </div>
+                    </div>
+
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      className="hidden" 
+                      onChange={handleFileChange}
+                    />
+
+                    <AnimatePresence>
+                      {showResForm && (
+                        <motion.form 
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          onSubmit={handleAddResource}
+                          className="mb-8 p-6 rounded-2xl bg-background-tertiary/40 border border-accent-primary/20 space-y-4"
+                        >
+                          <div className="flex flex-col md:flex-row items-stretch gap-4">
+                            <input 
+                              placeholder="Asset Title (e.g. Solution PDF)"
+                              value={resData.title}
+                              onChange={e => setResData({...resData, title: e.target.value})}
+                              className="flex-[1.2] bg-background-primary border border-border rounded-xl px-4 py-2.5 text-sm font-bold text-text-primary outline-none focus:border-accent-primary focus:ring-4 focus:ring-accent-primary/10 transition-all"
+                            />
+                            <div className="flex-[2] flex items-center gap-2">
+                              <select 
+                                value={resData.type}
+                                onChange={e => setResData({...resData, type: e.target.value})}
+                                className="w-28 bg-background-primary border border-border rounded-xl px-3 py-2.5 text-sm font-bold text-text-primary outline-none focus:border-accent-primary focus:ring-4 focus:ring-accent-primary/10 transition-all cursor-pointer"
+                              >
+                                <option>Link</option>
+                                <option>PDF</option>
+                                <option>Image</option>
+                                <option>Document</option>
+                              </select>
+                              <input 
+                                placeholder="URL (https://...)"
+                                value={resData.url}
+                                onChange={e => setResData({...resData, url: e.target.value})}
+                                className="flex-1 bg-background-primary border border-border rounded-xl px-4 py-2.5 text-sm font-bold text-text-primary outline-none focus:border-accent-primary focus:ring-4 focus:ring-accent-primary/10 transition-all"
+                              />
+                            </div>
+                          </div>
+                          <button type="submit" className="w-full py-2.5 rounded-xl bg-accent-primary text-white text-[11px] font-black uppercase tracking-widest hover:bg-accent-highlight transition-all shadow-premium">Save Attachment</button>
+                        </motion.form>
+                      )}
+                    </AnimatePresence>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {(topic.resources || []).map((res, i) => (
+                        <div key={i} className="group/res flex items-center justify-between p-4 rounded-2xl bg-background-secondary/30 border border-border/40 hover:border-accent-primary/40 transition-all hover:bg-background-secondary/50">
+                          <div className="flex items-center gap-4 min-w-0">
+                            <div className="h-10 w-10 shrink-0 rounded-[0.9rem] bg-background-tertiary flex items-center justify-center text-text-muted group-hover/res:text-accent-primary transition-all">
+                              {res.type === 'PDF' ? <FileText size={18} /> : res.type === 'Image' ? <Image size={18} /> : <LinkIcon size={18} />}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-[13px] font-black text-text-primary truncate uppercase italic">{res.title}</p>
+                              <p className="text-[10px] font-bold text-text-muted opacity-40 uppercase tracking-widest italic">{res.type}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <a href={res.url} target="_blank" rel="noopener noreferrer" className="p-2 text-text-muted hover:text-accent-primary transition-colors">
+                              <ExternalLink size={16} />
+                            </a>
+                            <button onClick={() => handleDeleteResource(i)} className="p-2 text-text-muted hover:text-danger opacity-0 group-hover/res:opacity-100 transition-all">
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>

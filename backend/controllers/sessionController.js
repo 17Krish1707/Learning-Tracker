@@ -55,8 +55,8 @@ const createSession = async (req, res) => {
       notes: notes || '',
     });
 
-    // Update topic's total hours
-    topic.hoursSpent = parseFloat((topic.hoursSpent + duration).toFixed(2));
+    // Update topic's total minutes
+    topic.minutesSpent += duration;
     await topic.save();
 
     // Update user streak
@@ -78,12 +78,12 @@ const getSessionsByTopic = async (req, res) => {
     const sessions = await StudySession.find({ topicId: req.params.topicId })
       .sort({ date: -1 });
 
-    const totalHours = sessions.reduce((sum, s) => sum + s.duration, 0);
+    const totalMinutes = sessions.reduce((sum, s) => sum + s.duration, 0);
 
     res.json({
       success: true,
       count: sessions.length,
-      totalHours: parseFloat(totalHours.toFixed(2)),
+      totalMinutes,
       sessions,
     });
   } catch (err) {
@@ -98,10 +98,10 @@ const deleteSession = async (req, res) => {
     const session = await StudySession.findOne({ _id: req.params.id, userId: req.user._id });
     if (!session) return res.status(404).json({ success: false, message: 'Session not found.' });
 
-    // Subtract hours from topic
+    // Subtract minutes from topic
     const topic = await Topic.findById(session.topicId);
     if (topic) {
-      topic.hoursSpent = Math.max(0, parseFloat((topic.hoursSpent - session.duration).toFixed(2)));
+      topic.minutesSpent = Math.max(0, topic.minutesSpent - session.duration);
       await topic.save();
     }
 
@@ -125,4 +125,23 @@ const getAllSessions = async (req, res) => {
 };
 // Add to module.exports
 
-module.exports = { createSession, getSessionsByTopic, getAllSessions, deleteSession };
+// @desc    Get today's total study minutes
+// @route   GET /api/sessions/stats/today
+const getTodayStats = async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const sessions = await StudySession.find({
+      userId: req.user._id,
+      date: { $gte: today }
+    });
+
+    const totalMinutes = sessions.reduce((sum, s) => sum + s.duration, 0);
+    res.json({ success: true, totalMinutes });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+module.exports = { createSession, getSessionsByTopic, getAllSessions, deleteSession, getTodayStats };

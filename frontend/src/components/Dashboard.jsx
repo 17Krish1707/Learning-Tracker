@@ -6,7 +6,7 @@ import TopicList from './TopicList';
 import AddTopic from './AddTopic';
 import DailyGoals from './DailyGoals';
 
-function Dashboard({ subject, topics, allTopics = [], profile, onStatusChange, onEditTopic, onAddTopic, onLogTime, onDeleteTopic }) {
+function Dashboard({ subject, topics, allTopics = [], profile, onStatusChange, onEditTopic, onAddTopic, onLogTime, onDeleteTopic, onNavigate, todayStats }) {
   const [showAddTopic, setShowAddTopic] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
   const [searchQuery, setSearchQuery] = useState('');
@@ -72,7 +72,7 @@ function Dashboard({ subject, topics, allTopics = [], profile, onStatusChange, o
                <div className="absolute inset-0 bg-background-primary/40 backdrop-blur-3xl" />
                <div className="relative p-10 rounded-[3.3rem] bg-background-primary/40 border border-white/10 shadow-soft overflow-hidden group">
                   <div className="absolute -right-20 -top-20 h-64 w-64 bg-accent-primary/10 rounded-full blur-[100px] group-hover:bg-accent-primary/20 transition-all duration-700" />
-                  <DailyGoals profile={profile} />
+                  <DailyGoals profile={profile} todayStats={todayStats} />
                </div>
             </div>
 
@@ -95,7 +95,7 @@ function Dashboard({ subject, topics, allTopics = [], profile, onStatusChange, o
           <div className="lg:col-span-5 space-y-8">
              <div className="flex items-center justify-between px-4">
                 <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-text-muted opacity-80">Queue</h3>
-                <span className="text-[10px] font-black px-3 py-1 rounded-full bg-background-tertiary border border-border text-text-muted uppercase tracking-wider">Priority Priority</span>
+                <span className="text-[10px] font-black px-3 py-1 rounded-full bg-background-tertiary border border-border text-text-muted uppercase tracking-wider">System Queue</span>
              </div>
 
              <div className="space-y-4">
@@ -105,6 +105,7 @@ function Dashboard({ subject, topics, allTopics = [], profile, onStatusChange, o
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.1 }}
                     key={topic.id}
+                    onClick={() => onNavigate(topic.subjectId)}
                     className="group p-6 bg-background-primary/50 backdrop-blur-md border border-border rounded-[2rem] hover:border-accent-primary/40 hover:shadow-premium transition-all cursor-pointer flex items-center justify-between gap-4"
                   >
                     <div className="flex items-center gap-5 min-w-0">
@@ -180,7 +181,7 @@ function Dashboard({ subject, topics, allTopics = [], profile, onStatusChange, o
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
           <div className="flex items-center gap-3 mb-4">
              <div className="h-3 w-3 rounded-full bg-success shadow-[0_0_12px_rgba(5,150,105,0.6)] animate-pulse" />
-             <span className="text-[11px] font-black uppercase tracking-[0.4em] text-success">Active Protocol</span>
+             <span className="text-[11px] font-black uppercase tracking-[0.4em] text-success">Study Session</span>
           </div>
           <h1 className="text-6xl font-black text-text-primary tracking-tighter mb-4 flex items-center gap-6">
             {subject.name}
@@ -225,7 +226,7 @@ function Dashboard({ subject, topics, allTopics = [], profile, onStatusChange, o
                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-12">
                  <div className="space-y-8 flex-1">
                    <div>
-                     <p className="text-[11px] font-black text-accent-primary uppercase tracking-[0.5em] mb-4 opacity-80 italic">Global Evolution</p>
+                     <p className="text-[11px] font-black text-accent-primary uppercase tracking-[0.5em] mb-4 opacity-80 italic">Course Progress</p>
                      <h3 className="text-8xl font-black text-text-primary tracking-tighter tabular-nums leading-none">{progressPercent}<span className="text-3xl text-text-muted ml-2 opacity-30">%</span></h3>
                    </div>
                    
@@ -295,7 +296,7 @@ function Dashboard({ subject, topics, allTopics = [], profile, onStatusChange, o
                 <Search className="text-accent-primary" size={24} />
                 <input 
                   type="text" 
-                  placeholder="Query system entries..." 
+                  placeholder="Search topics..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-transparent border-none text-lg font-bold text-text-primary placeholder:text-text-muted/40 focus:ring-0 outline-none w-full italic"
@@ -374,10 +375,7 @@ function Dashboard({ subject, topics, allTopics = [], profile, onStatusChange, o
                    </div>
                 </div>
                 <div className="mt-8 pt-8 border-t border-border/60 flex items-center justify-between relative z-10">
-                   <span className="text-xs font-bold text-text-muted italic opacity-60 tracking-tight">Active session active</span>
-                   <div className="flex items-center gap-2 text-xs font-black text-success bg-success/5 px-2 py-0.5 rounded-full border border-success/10">
-                      <TrendingUp size={12} /> +12%
-                   </div>
+                   <span className="text-xs font-bold text-text-muted italic opacity-60 tracking-tight">Tracked effort</span>
                 </div>
               </div>
             </motion.div>
@@ -400,10 +398,7 @@ function Dashboard({ subject, topics, allTopics = [], profile, onStatusChange, o
                    </div>
                 </div>
                 <div className="mt-8 pt-8 border-t border-border/60 flex items-center justify-between relative z-10">
-                   <span className="text-xs font-bold text-text-muted italic opacity-60 tracking-tight">Projected completion</span>
-                   <div className="flex -space-x-2">
-                      {[1,2,3].map(i => <div key={i} className="h-8 w-8 rounded-full border-2 border-background-primary bg-background-tertiary shadow-sm" />)}
-                   </div>
+                   <span className="text-xs font-bold text-text-muted italic opacity-60 tracking-tight">Estimated completion</span>
                 </div>
               </div>
             </motion.div>
@@ -417,7 +412,7 @@ function Dashboard({ subject, topics, allTopics = [], profile, onStatusChange, o
             className="p-10 rounded-[4rem] bg-background-primary border border-border shadow-premium relative overflow-hidden"
           >
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-accent-primary via-accent-secondary to-accent-highlight" />
-            <DailyGoals profile={profile} />
+            <DailyGoals profile={profile} todayStats={todayStats} />
           </motion.div>
 
         </div>
