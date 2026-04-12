@@ -20,8 +20,12 @@ const folderRoutes = require('./routes/folders');
 
 // Ensure uploads directory exists
 const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
+try {
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+} catch (e) {
+  console.warn('⚠️ Could not create uploads directory (may be read-only environment)');
 }
 
 // Multer Config
