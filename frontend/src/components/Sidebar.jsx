@@ -13,12 +13,18 @@ function Sidebar({
   activeView, setActiveView,
   onAddFolder, onEditFolder, onDeleteFolder,
   onAddSubject, onEditSubject, onDeleteSubject,
-  profile,
+  profile, topics = [],
   isOpen, onClose
 }) {
   const [collapsedFolders, setCollapsedFolders] = useState({});
   const [modal, setModal] = useState(null);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({ name: '', folderId: '', iconName: 'Book', color: '#6366f1', emoji: '📁' });
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  // Operational Target Calculation
+  const totalTopics = topics.length;
+  const completedTopics = topics.filter(t => t.status === 'Completed').length;
+  const progressPercent = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
 
   const toggleFolder = (id) => setCollapsedFolders(prev => ({ ...prev, [id]: !prev[id] }));
 
@@ -27,6 +33,7 @@ function Sidebar({
 
   const handleOpenModal = (type, existingData = null) => {
     setModal({ type, existingData });
+    setIsDropdownOpen(false);
     setFormData(existingData || (type === 'addFolder' ? { name: '', emoji: '📁', color: '#6366f1' } : { name: '', folderId: '', iconName: 'Book', color: '#6366f1' }));
   };
 
@@ -34,6 +41,7 @@ function Sidebar({
     e.preventDefault();
     if (modal.type === 'addFolder') onAddFolder(formData);
     else if (modal.type === 'addSubject') onAddSubject(formData);
+    else if (modal.type === 'editSubject') onEditSubject(modal.existingData.id, formData);
     setModal(null);
   };
 
@@ -49,44 +57,73 @@ function Sidebar({
     }
   };
 
-  const NavItem = ({ icon: Icon, label, active, onClick, badge, color, draggable, onDragStart }) => (
+  const NavItem = ({ icon: Icon, label, active, onClick, onEdit, onDelete, badge, color, draggable, onDragStart }) => (
     <div
       draggable={draggable}
       onDragStart={onDragStart}
-      className="relative"
+      className="relative group/nav"
     >
-      <button
-        onClick={onClick}
-        className={cn(
-          "group flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-bold transition-all mb-1",
-          active
-            ? 'bg-accent-primary text-white shadow-lg shadow-accent-primary/25 scale-[1.02]'
-            : 'text-text-secondary hover:bg-background-tertiary hover:text-text-primary'
-        )}
-      >
-        <div className="flex items-center gap-3">
+      <div className={cn(
+        "group flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-bold transition-all mb-1",
+        active
+          ? 'bg-accent-primary text-white shadow-lg shadow-accent-primary/25 scale-[1.02]'
+          : 'text-text-secondary hover:bg-background-tertiary hover:text-text-primary'
+      )}>
+        <button
+          onClick={onClick}
+          className="flex flex-1 items-center gap-3 text-left overflow-hidden"
+        >
           <div className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-xl transition-all shadow-sm",
+            "flex h-8 w-8 items-center justify-center rounded-xl transition-all shadow-sm shrink-0",
             active ? 'bg-white/20' : 'bg-background-secondary border border-border group-hover:scale-110'
-          )} style={!active && color ? { 
+          )} style={color ? (active ? {
+            color: 'white',
+            backgroundColor: `${color}40`,
+            borderColor: 'white/20'
+          } : { 
             backgroundColor: `${color}25`, 
             color: color, 
             borderColor: `${color}40`,
             boxShadow: `0 4px 12px ${color}15`
-          } : {}}>
+          }) : {}}>
             <Icon size={15} strokeWidth={2.5} />
           </div>
-          <span className="truncate max-w-[140px] tracking-tight">{label}</span>
+          <span className="truncate tracking-tight">{label}</span>
+        </button>
+
+        <div className="flex items-center gap-1 ml-2">
+          {onEdit && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); onEdit(); }}
+              className={cn(
+                "p-1.5 rounded-lg opacity-0 group-hover/nav:opacity-100 transition-all hover:bg-white/10",
+                active ? "text-white/60 hover:text-white" : "text-text-muted hover:text-accent-primary hover:bg-accent-primary/5"
+              )}
+            >
+              <Icons.Settings2 size={12} />
+            </button>
+          )}
+          {onDelete && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); onDelete(); }}
+              className={cn(
+                "p-1.5 rounded-lg opacity-0 group-hover/nav:opacity-100 transition-all hover:bg-white/10",
+                active ? "text-white/60 hover:text-red-300" : "text-text-muted hover:text-red-500 hover:bg-red-500/5"
+              )}
+            >
+              <Icons.Trash2 size={12} />
+            </button>
+          )}
+          {badge !== undefined && (
+            <span className={cn(
+              "flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-black",
+              active ? 'bg-white/30 text-white' : 'bg-background-tertiary text-text-muted'
+            )}>
+              {badge}
+            </span>
+          )}
         </div>
-        {badge !== undefined && (
-          <span className={cn(
-            "flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-black",
-            active ? 'bg-white/30 text-white' : 'bg-background-tertiary text-text-muted'
-          )}>
-            {badge}
-          </span>
-        )}
-      </button>
+      </div>
     </div>
   );
 
@@ -178,6 +215,8 @@ function Sidebar({
                             label={subject.name}
                             active={activeSubjectId === subject.id}
                             onClick={() => { setActiveSubjectId(subject.id); onClose(); }}
+                            onEdit={() => handleOpenModal('editSubject', subject)}
+                            onDelete={() => { if(confirm(`Delete ${subject.name}?`)) onDeleteSubject(subject.id); }}
                             color={subject.color}
                             draggable
                             onDragStart={(e) => handleDragStart(e, subject.id)}
@@ -208,6 +247,8 @@ function Sidebar({
                       label={subject.name}
                       active={activeSubjectId === subject.id}
                       onClick={() => { setActiveSubjectId(subject.id); onClose(); }}
+                      onEdit={() => handleOpenModal('editSubject', subject)}
+                      onDelete={() => { if(confirm(`Delete ${subject.name}?`)) onDeleteSubject(subject.id); }}
                       color={subject.color}
                       draggable
                       onDragStart={(e) => handleDragStart(e, subject.id)}
@@ -226,13 +267,13 @@ function Sidebar({
                <Icons.Zap size={14} className="text-accent-primary animate-pulse" />
             </div>
             <div className="flex items-end justify-between mb-4">
-              <span className="text-4xl font-black text-text-primary tracking-tighter">85<span className="text-xl opacity-30 ml-1">%</span></span>
+              <span className="text-4xl font-black text-text-primary tracking-tighter">{progressPercent}<span className="text-xl opacity-30 ml-1">%</span></span>
               <span className="text-[10px] text-text-muted font-bold mb-1 italic opacity-60">Calculated Projection</span>
             </div>
             <div className="h-2 w-full rounded-full bg-background-secondary/50 border border-white/5 overflow-hidden p-0.5">
               <motion.div
                 initial={{ width: 0 }}
-                animate={{ width: '85%' }}
+                animate={{ width: `${progressPercent}%` }}
                 transition={{ duration: 1.5, ease: "circOut" }}
                 className="h-full bg-gradient-to-r from-accent-primary to-accent-highlight rounded-full relative"
               >
@@ -254,40 +295,50 @@ function Sidebar({
               onClick={e => e.stopPropagation()}
             >
               <div className="p-8">
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-2xl font-black text-text-primary uppercase tracking-tight">
-                    {modal.type === 'addFolder' ? 'Create Folder' : 'New Subject'}
-                  </h2>
-                  <button onClick={() => setModal(null)} className="h-10 w-10 flex items-center justify-center rounded-xl bg-background-secondary border border-border text-text-muted hover:text-text-primary transition-all">
-                    <Icons.X size={18} />
+                <div className="flex items-center justify-between mb-10">
+                  <div className="flex flex-col">
+                    <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-text-primary via-accent-primary to-text-secondary uppercase tracking-[-0.04em] leading-none mb-1">
+                      {modal.type === 'addFolder' ? 'Create Folder' : modal.type === 'editSubject' ? 'Edit Subject' : 'New Subject'}
+                    </h2>
+                    <div className="h-1 w-8 bg-accent-primary rounded-full opacity-50" />
+                  </div>
+                  <button onClick={() => setModal(null)} className="h-12 w-12 flex items-center justify-center rounded-2xl bg-background-tertiary/60 border border-border/40 text-text-muted hover:text-text-primary transition-all hover:scale-110 active:scale-95 shadow-soft hover:border-accent-primary/20">
+                    <Icons.X size={20} />
                   </button>
                 </div>
 
-                <form onSubmit={handleModalSubmit} className="space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest px-1">Name</label>
-                    <input
-                      className="w-full h-12 px-4 bg-background-secondary border border-border rounded-xl text-sm font-bold outline-none focus:border-accent-primary transition-all placeholder:font-normal"
-                      placeholder={modal.type === 'addFolder' ? "e.g. University" : "e.g. Physics"}
-                      value={formData.name}
-                      onChange={e => setFormData({ ...formData, name: e.target.value })}
-                      autoFocus
-                      required
-                    />
+                <form onSubmit={handleModalSubmit} className="space-y-8">
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-black text-text-muted uppercase tracking-[0.25em] px-1 opacity-50 italic">Identification</label>
+                    <div className="relative group">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-accent-primary opacity-40 group-focus-within:opacity-100 transition-opacity">
+                        <Icons.Tag size={16} />
+                      </div>
+                      <input
+                        className="w-full h-14 pl-12 pr-4 bg-background-tertiary border border-border/40 rounded-2xl text-base font-bold text-text-primary outline-none focus:border-accent-primary focus:ring-4 focus:ring-accent-primary/10 transition-all placeholder:text-text-muted/40 placeholder:font-medium shadow-inner"
+                        placeholder={modal.type === 'addFolder' ? "e.g. Computer Science" : "e.g. Advanced Physics"}
+                        value={formData.name}
+                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                        autoFocus
+                        required
+                      />
+                    </div>
                   </div>
 
                   {modal.type === 'addFolder' ? (
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-text-muted uppercase tracking-widest px-1">Symbol</label>
-                      <div className="grid grid-cols-5 gap-2">
+                    <div className="space-y-4">
+                      <label className="text-[11px] font-black text-text-muted uppercase tracking-[0.25em] px-1 opacity-50 italic">Iconology</label>
+                      <div className="grid grid-cols-5 gap-3">
                         {FOLDER_EMOJIS.map(emoji => (
                           <button
                             key={emoji}
                             type="button"
                             onClick={() => setFormData({ ...formData, emoji })}
                             className={cn(
-                              "h-10 w-10 flex items-center justify-center text-xl rounded-xl border transition-all",
-                              formData.emoji === emoji ? "bg-accent-primary text-white border-accent-primary" : "bg-background-secondary border-border"
+                              "h-12 w-12 flex items-center justify-center text-2xl rounded-2xl border-2 transition-all",
+                              formData.emoji === emoji 
+                                ? "bg-accent-primary/10 border-accent-primary shadow-lg shadow-accent-primary/10 scale-110" 
+                                : "bg-background-secondary border-border/40 hover:border-accent-primary/30"
                             )}
                           >{emoji}</button>
                         ))}
@@ -295,21 +346,92 @@ function Sidebar({
                     </div>
                   ) : (
                     <>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest px-1">Location</label>
-                        <select
-                          className="w-full h-12 px-4 bg-background-secondary border border-border rounded-xl text-sm font-bold appearance-none outline-none focus:border-accent-primary"
-                          value={formData.folderId}
-                          onChange={e => setFormData({ ...formData, folderId: e.target.value })}
-                        >
-                          <option value="">Uncategorized</option>
-                          {folders.map(f => <option key={f.id} value={f.id}>{f.emoji} {f.name}</option>)}
-                        </select>
+                      <div className="space-y-4">
+                        <label className="text-[11px] font-black text-text-muted uppercase tracking-[0.25em] px-1 opacity-50 italic">Classification & Visuals</label>
+                        <div className="flex items-center gap-6">
+                          <div className="flex-1 relative">
+                            <button
+                              type="button"
+                              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                              className="w-full h-14 pl-12 pr-10 bg-background-tertiary border border-border/40 rounded-2xl text-[13px] font-black outline-none focus:border-accent-primary focus:ring-4 focus:ring-accent-primary/10 transition-all cursor-pointer uppercase tracking-tight text-text-primary shadow-inner flex items-center justify-between text-left group"
+                            >
+                              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-accent-primary opacity-40 group-hover:opacity-100 transition-opacity">
+                                <Icons.Folder size={16} />
+                              </div>
+                              <span className="truncate">
+                                {formData.folderId 
+                                  ? folders.find(f => f.id === formData.folderId)?.emoji + " " + folders.find(f => f.id === formData.folderId)?.name
+                                  : "📁 Uncategorized"}
+                              </span>
+                              <Icons.ChevronDown size={14} className={cn("text-text-muted/40 transition-transform duration-300", isDropdownOpen && "rotate-180")} />
+                            </button>
+
+                            <AnimatePresence>
+                              {isDropdownOpen && (
+                                <>
+                                  <div className="fixed inset-0 z-[60]" onClick={() => setIsDropdownOpen(false)} />
+                                  <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    className="absolute left-0 right-0 mt-2 bg-background-secondary border border-border/60 rounded-2xl shadow-premium overflow-hidden z-[70] backdrop-blur-3xl"
+                                  >
+                                    <div className="max-h-60 overflow-y-auto p-1.5 space-y-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => { setFormData({ ...formData, folderId: '' }); setIsDropdownOpen(false); }}
+                                        className={cn(
+                                          "w-full px-4 py-3 rounded-xl text-left text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-3",
+                                          !formData.folderId ? "bg-accent-primary/10 text-accent-primary" : "text-text-muted hover:bg-background-tertiary hover:text-text-primary"
+                                        )}
+                                      >
+                                        <div className="h-2 w-2 rounded-full bg-current opacity-40" />
+                                        Uncategorized
+                                      </button>
+                                      {folders.map(f => (
+                                        <button
+                                          key={f.id}
+                                          type="button"
+                                          onClick={() => { setFormData({ ...formData, folderId: f.id }); setIsDropdownOpen(false); }}
+                                          className={cn(
+                                            "w-full px-4 py-3 rounded-xl text-left text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-3",
+                                            formData.folderId === f.id ? "bg-accent-primary/10 text-accent-primary" : "text-text-muted hover:bg-background-tertiary hover:text-text-primary"
+                                          )}
+                                        >
+                                          <span className="text-sm">{f.emoji}</span>
+                                          <span className="truncate">{f.name}</span>
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </motion.div>
+                                </>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                          
+                          <div className="shrink-0 flex flex-col items-center gap-2">
+                            <div 
+                              className="h-14 w-14 rounded-[1.25rem] flex items-center justify-center border-2 shadow-premium transition-all duration-500 animate-fade-in"
+                              style={{ 
+                                backgroundColor: `${formData.color}15`, 
+                                color: formData.color,
+                                borderColor: `${formData.color}30`,
+                                boxShadow: `0 12px 24px ${formData.color}20`
+                              }}
+                            >
+                              {(() => {
+                                const PreviewIcon = Icons[formData.iconName] || Icons.Book;
+                                return <PreviewIcon size={24} strokeWidth={2.5} />;
+                              })()}
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest px-1">Visual Icon</label>
-                        <div className="grid grid-cols-5 gap-2">
-                          {ICON_OPTIONS.map(name => {
+
+                      <div className="space-y-4">
+                        <label className="text-[11px] font-black text-text-muted uppercase tracking-[0.25em] px-1 opacity-50 italic">Strategic Mapping</label>
+                        <div className="grid grid-cols-5 gap-3">
+                        {ICON_OPTIONS.map(name => {
                             const IconComp = Icons[name];
                             return (
                               <button
@@ -317,12 +439,34 @@ function Sidebar({
                                 type="button"
                                 onClick={() => setFormData({ ...formData, iconName: name })}
                                 className={cn(
-                                  "h-10 w-10 flex items-center justify-center rounded-xl border transition-all",
-                                  formData.iconName === name ? "bg-accent-primary text-white border-accent-primary" : "bg-background-secondary border-border text-text-muted"
+                                  "h-12 w-12 flex items-center justify-center rounded-2xl border-2 transition-all",
+                                  formData.iconName === name 
+                                    ? "bg-accent-primary text-white border-accent-primary shadow-xl shadow-accent-primary/20 scale-110" 
+                                    : "bg-background-secondary border-border/40 text-text-muted hover:border-accent-primary/40 hover:text-text-primary"
                                 )}
-                              ><IconComp size={18} /></button>
+                              ><IconComp size={20} strokeWidth={2.5} /></button>
                             );
                           })}
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <label className="text-[11px] font-black text-text-muted uppercase tracking-[0.25em] px-1 opacity-50 italic">Neural Color Token</label>
+                        <div className="flex flex-wrap gap-3">
+                          {COLOR_OPTIONS.map(color => (
+                            <button
+                              key={color}
+                              type="button"
+                              onClick={() => setFormData({ ...formData, color })}
+                              className={cn(
+                                "h-8 w-8 rounded-xl transition-all border-2 flex items-center justify-center relative",
+                                formData.color === color ? "border-white scale-110 shadow-lg ring-4 ring-white/10" : "border-transparent opacity-60 hover:opacity-100 hover:scale-110"
+                              )}
+                              style={{ backgroundColor: color }}
+                            >
+                              {formData.color === color && <div className="h-1.5 w-1.5 rounded-full bg-white shadow-sm" />}
+                            </button>
+                          ))}
                         </div>
                       </div>
                     </>

@@ -280,9 +280,11 @@ function App() {
           onEditSubject={handleEditSubject}
           onDeleteSubject={handleDeleteSubject}
           profile={profile}
+          topics={allTopics}
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
         />
+
 
         <main className="flex-1 overflow-y-auto bg-[radial-gradient(circle_at_0%_0%,rgba(124,58,237,0.03),transparent_40%)] p-6 lg:p-12 custom-scrollbar relative">
           <AnimatePresence mode="wait">

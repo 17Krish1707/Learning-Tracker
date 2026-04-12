@@ -18,6 +18,7 @@ export function useData(user) {
       setFolders([]); setSubjects([]); setTopics({}); setStreak(0);
       return;
     }
+    if (user.streakDays !== undefined) setStreak(user.streakDays);
     loadFoldersAndSubjects();
   }, [user]);
 
